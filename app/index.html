@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Talyer Tally</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#121A22">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: phone-width app shell, sticky header, scrolling view, floating pill nav with raised centre "new job" button */
+:root{
+  --bg:#ECEFF2; --surface:#FFFFFF; --surface-2:#F4F6F8; --ink:#131B23; --muted:#5B6976; --line:#D8DEE4;
+  --accent:#E2552B; --accent-ink:#FFFFFF; --accent-soft:#FBE3DA;
+  --nav:#131B23; --nav-ink:#9FB0BE; --nav-active:#FFFFFF;
+  --wait:#8A6400; --wait-bg:#FFF1C2; --repair:#1E5DAA; --repair-bg:#DCE8F8;
+  --ready:#6A3DBE; --ready-bg:#EAE2FA; --paid:#1B7647; --paid-bg:#D8F1E3; --danger:#C2332B; --danger-bg:#FBE0DE;
+  --plate:#FFFFFF; --plate-ink:#0E1419;
+  --shadow:0 1px 2px rgba(19,27,35,.06),0 4px 14px rgba(19,27,35,.06);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E141A; --surface:#17202A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#93A3B1; --line:#2A3743;
+  --accent:#FF6B3D; --accent-ink:#1A0D07; --accent-soft:#3B2219;
+  --nav:#22303C; --nav-ink:#8A9CAB; --nav-active:#FFFFFF;
+  --wait:#F2C94C; --wait-bg:#3A3112; --repair:#7DB2F5; --repair-bg:#16304F; --ready:#B79BF5; --ready-bg:#2D2148;
+  --paid:#6BD69C; --paid-bg:#163828; --danger:#FF8A80; --danger-bg:#3D1C1A; --plate:#E9EEF2; --plate-ink:#0E1419;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E141A; --surface:#17202A; --surface-2:#1E2933; --ink:#E7EDF2; --muted:#93A3B1; --line:#2A3743;
+  --accent:#FF6B3D; --accent-ink:#1A0D07; --accent-soft:#3B2219;
+  --nav:#22303C; --nav-ink:#8A9CAB; --nav-active:#FFFFFF;
+  --wait:#F2C94C; --wait-bg:#3A3112; --repair:#7DB2F5; --repair-bg:#16304F; --ready:#B79BF5; --ready-bg:#2D2148;
+  --paid:#6BD69C; --paid-bg:#163828; --danger:#FF8A80; --danger-bg:#3D1C1A; --plate:#E9EEF2; --plate-ink:#0E1419;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25); color-scheme:dark}
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.4;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--bg)}
+*{box-sizing:border-box}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:10px}
+.app{max-width:480px;margin:0 auto;min-height:100%;position:relative}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);display:flex;align-items:center;gap:12px;
+  padding-block:14px 10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top h1{font-family:var(--f-display);font-size:26px;font-weight:700;margin:0;letter-spacing:.2px;line-height:1.05;text-wrap:balance}
+.top .eyebrow{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.top .grow{flex:1;min-width:0}
+.icon-btn{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--surface);box-shadow:var(--shadow);flex:none;position:relative}
+.icon-btn svg{width:20px;height:20px}
+.dot{position:absolute;top:7px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.avatar{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-weight:700;font-family:var(--f-display);font-size:16px;flex:none;background:var(--ink);color:var(--bg)}
+.avatar.sm{width:30px;height:30px;border-radius:10px;font-size:13px}
+.view{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:4px 130px;display:flex;flex-direction:column;gap:18px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:-6px}
+.sec-h h2{font-family:var(--f-display);font-size:19px;margin:0;font-weight:700}
+.sec-h .link{color:var(--accent);font-weight:600;font-size:14px;display:flex;align-items:center;gap:2px}
+.sec-h .link svg{width:16px;height:16px}
+
+/* stat tiles */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border-radius:18px;padding:14px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tile .ic{width:34px;height:34px;border-radius:11px;display:grid;place-items:center}
+.tile .ic svg{width:18px;height:18px}
+.tile .v{font-family:var(--f-display);font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.tile .l{font-size:13px;color:var(--muted);font-weight:500}
+.tile.hero{grid-column:1/-1;background:var(--ink);color:var(--bg);flex-direction:row;align-items:center;justify-content:space-between}
+.tile.hero .l{color:inherit;opacity:.7}
+.tile.hero .v{font-size:32px}
+.tile.hero .ic{background:var(--accent);color:var(--accent-ink);width:48px;height:48px;border-radius:15px}
+.tile.hero .ic svg{width:24px;height:24px}
+
+/* quick actions */
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.qa{display:flex;flex-direction:column;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink);text-align:center}
+.qa span.b{width:58px;height:58px;border-radius:18px;background:var(--surface);display:grid;place-items:center;box-shadow:var(--shadow);color:var(--accent)}
+.qa span.b svg{width:24px;height:24px}
+
+/* cards & lists */
+.list{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border-radius:18px;box-shadow:var(--shadow);padding:14px}
+.job{display:flex;gap:12px;align-items:center;text-align:left;width:100%}
+.job .mi{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;flex:none}
+.job .mi svg{width:24px;height:24px}
+.job .mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.job .t{font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job .s{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.job .r{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.plate{font-family:var(--f-mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;background:var(--plate);color:var(--plate-ink);border:1.5px solid var(--plate-ink);border-radius:5px;padding:0 5px;line-height:17px;white-space:nowrap}
+.plate.big{font-size:20px;line-height:30px;padding:0 12px;border-width:2.5px;border-radius:7px;letter-spacing:.1em}
+.jo{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pill svg{width:13px;height:13px}
+.s-queue{background:var(--wait-bg);color:var(--wait)} .s-repair{background:var(--repair-bg);color:var(--repair)}
+.s-ready{background:var(--ready-bg);color:var(--ready)} .s-paid{background:var(--paid-bg);color:var(--paid)}
+.s-low{background:var(--danger-bg);color:var(--danger)}
+
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px));padding-block:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;border-radius:999px;background:var(--surface);font-size:13.5px;font-weight:600;white-space:nowrap;box-shadow:var(--shadow);flex:none}
+.chip svg{width:16px;height:16px}
+.chip .n{font-size:11.5px;background:var(--surface-2);border-radius:999px;padding:0 6px;font-variant-numeric:tabular-nums}
+.chip.on{background:var(--ink);color:var(--bg)}
+.chip.on .n{background:rgba(127,127,127,.3)}
+
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:16px;padding:0 14px;box-shadow:var(--shadow)}
+.search svg{width:19px;height:19px;color:var(--muted);flex:none}
+.search input{flex:1;min-width:0;border:0;background:none;padding:13px 0;outline:none;font-size:15px}
+
+.row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.row:last-child{border-bottom:0}
+.row .ci{width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;flex:none;color:var(--muted)}
+.row .ci svg{width:20px;height:20px}
+.row .mid{flex:1;min-width:0}
+.row .t{font-weight:600;font-size:14.5px;line-height:1.25}
+.row .s{font-size:12.5px;color:var(--muted);margin-top:2px}
+.row .end{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+
+.stepper{display:flex;align-items:center;background:var(--surface-2);border-radius:12px;flex:none}
+.stepper button{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;color:var(--ink)}
+.stepper button svg{width:16px;height:16px}
+.stepper b{min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 18px;border-radius:16px;font-weight:700;font-size:15.5px;background:var(--accent);color:var(--accent-ink);width:100%}
+.btn svg{width:20px;height:20px}
+.btn.ghost{background:var(--surface-2);color:var(--ink)}
+.btn.dark{background:var(--ink);color:var(--bg)}
+.btn.sm{padding:9px 13px;font-size:13.5px;width:auto;border-radius:12px}
+.btn.sm svg{width:17px;height:17px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* job detail */
+.jhero{display:flex;flex-direction:column;gap:12px}
+.jhero .top-r{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.jhero .model{font-family:var(--f-display);font-size:22px;font-weight:700;line-height:1.1}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;font-size:14px;align-items:center}
+.kv .k{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.kv .k svg{width:16px;height:16px}
+.kv .v{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.problem{background:var(--surface-2);border-radius:12px;padding:10px 12px;font-size:14px;display:flex;gap:8px}
+.problem svg{width:17px;height:17px;flex:none;color:var(--muted);margin-top:1px}
+.track{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:relative}
+.track .st{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--muted);text-align:center;position:relative}
+.track .st i,.track .st svg{width:34px;height:34px;border-radius:50%;padding:8px;background:var(--surface-2);position:relative;z-index:1}
+.track .st.done svg{background:var(--ink);color:var(--bg)}
+.track .st.cur svg{background:var(--accent);color:var(--accent-ink)}
+.track .st.cur{color:var(--ink)}
+.track .st:not(:last-child)::after{content:"";position:absolute;top:17px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:var(--line)}
+.track .st.done::after{background:var(--ink)}
+.sum{display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.sum .l{display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums}
+.sum .l span:first-child{color:var(--muted);display:flex;align-items:center;gap:6px}
+.sum .l svg{width:16px;height:16px}
+.sum .tot{border-top:2px dashed var(--line);padding-top:10px;margin-top:2px;font-size:15px;font-weight:700;align-items:baseline}
+.sum .tot span:first-child{color:var(--ink)}
+.sum .tot .big{font-family:var(--f-display);font-size:30px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 10px;color:var(--muted);text-align:center;font-size:14px}
+.empty svg{width:34px;height:34px;opacity:.6}
+.who{display:inline-flex;align-items:center;gap:4px}
+.who svg{width:13px;height:13px}
+
+/* floating nav */
+.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom,0px));width:min(360px,calc(100% - 48px));
+  background:var(--nav);border-radius:24px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;padding:7px 8px;z-index:40;box-shadow:0 10px 30px rgba(10,15,20,.35)}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--nav-ink);font-size:10.5px;font-weight:600;padding:6px 0;border-radius:16px}
+.nav button svg{width:22px;height:22px}
+.nav button.on{color:var(--nav-active)}
+.nav button.on svg{stroke-width:2.5}
+.nav button.on::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);margin-top:1px}
+.nav button:not(.on)::after{content:"";width:5px;height:5px;margin-top:1px}
+.nav .fab{width:56px;height:56px;border-radius:19px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin:-26px auto 0;box-shadow:0 8px 20px rgba(226,85,43,.45);border:4px solid var(--bg);padding:0}
+.nav .fab svg{width:26px;height:26px;stroke-width:2.6}
+.nav .fab::after{display:none}
+
+/* bottom sheet */
+.scrim{position:fixed;inset:0;background:rgba(8,12,16,.5);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,105%);width:100%;max-width:480px;max-height:90%;background:var(--bg);z-index:61;
+  border-radius:26px 26px 0 0;display:flex;flex-direction:column;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.sheet.open{transform:translate(-50%,0)}
+.sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:9px auto 0;flex:none}
+.sheet .sh{display:flex;align-items:center;gap:10px;padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));flex:none}
+.sheet .sh h3{flex:1;margin:0;font-family:var(--f-display);font-size:21px;font-weight:700}
+.sheet .sh .icon-btn{width:36px;height:36px;border-radius:12px}
+.sheet .sb{overflow-y:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:4px calc(20px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sheet .sb>*{flex-shrink:0}
+.chips{flex-shrink:0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+.field label svg{width:15px;height:15px}
+.inp{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;font-size:16px;width:100%;outline:none}
+.inp:focus{border-color:var(--accent)}
+textarea.inp{resize:none;min-height:70px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mini-chips button{padding:6px 10px;border-radius:10px;background:var(--surface);border:1.5px solid var(--line);font-size:13px;font-weight:600}
+.mini-chips button.on{border-color:var(--accent);background:var(--accent-soft)}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.pick button{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600;text-align:center}
+.pick button svg{width:24px;height:24px}
+.pick button.on{border-color:var(--accent);background:var(--accent-soft)}
+.badge{min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;display:inline-grid;place-items:center;font-variant-numeric:tabular-nums}
+.stock{font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.stock.low{color:var(--danger)}
+.bar{height:5px;border-radius:3px;background:var(--surface-2);width:64px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--paid);border-radius:3px}
+.bar i.low{background:var(--danger)}
+.change{display:flex;justify-content:space-between;align-items:center;background:var(--paid-bg);color:var(--paid);border-radius:14px;padding:12px 14px;font-weight:700}
+.change .v{font-family:var(--f-display);font-size:24px;font-variant-numeric:tabular-nums}
+.change.neg{background:var(--danger-bg);color:var(--danger)}
+
+/* receipt */
+.receipt{background:#FFFDF8;color:#1A1A1A;border-radius:6px;padding:20px 18px;font-family:var(--f-mono);font-size:12.5px;line-height:1.5;
+  -webkit-mask:radial-gradient(circle at 8px 100%,transparent 6px,#000 6.5px) 0 0/16px 100% repeat-x;mask:radial-gradient(circle at 8px 100%,transparent 6px,#000 6.5px) -8px 0/16px 100% repeat-x;padding-bottom:28px}
+.receipt .c{text-align:center}
+.receipt .shop{font-family:var(--f-display);font-size:20px;font-weight:700}
+.receipt hr{border:0;border-top:1.5px dashed #999;margin:10px 0}
+.receipt .ln{display:flex;justify-content:space-between;gap:8px}
+.receipt .ln span:first-child{min-width:0;overflow-wrap:anywhere}
+.receipt .gt{font-size:16px;font-weight:600}
+
+/* menu & reports */
+.menu .row{padding:14px 0}
+.menu .row .ci{color:var(--accent);background:var(--accent-soft)}
+.menu .row svg.chev{width:18px;height:18px;color:var(--muted)}
+.chart-wrap{overflow-x:auto;margin-inline:-4px;padding-inline:4px;scrollbar-width:thin}
+.chart{display:grid;gap:8px;align-items:end;height:150px;padding-top:18px}
+.chart .c.out{opacity:.4}
+.range-card{display:flex;flex-direction:column;gap:10px}
+.range-note{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.req{color:var(--accent);margin-left:-2px}
+.opt{margin-left:auto;font-weight:500;text-transform:none;letter-spacing:0;font-size:12px}
+.inp.err{border-color:var(--danger);background:var(--danger-bg)}
+.form-note{margin:0;font-size:13px;color:var(--muted)}
+.chart .c{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;min-width:0}
+.chart .c .b{width:100%;max-width:30px;border-radius:7px 7px 3px 3px;background:var(--line);position:relative}
+.chart .c.today .b{background:var(--accent)}
+.chart .c .val{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart .c .d{font-size:11.5px;font-weight:600;color:var(--muted)}
+.hbar{display:flex;flex-direction:column;gap:5px}
+.hbar .top-l{display:flex;justify-content:space-between;font-size:13.5px;gap:8px}
+.hbar .top-l b{font-variant-numeric:tabular-nums}
+.hbar .tr{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.hbar .tr i{display:block;height:100%;border-radius:4px;background:var(--accent)}
+.role-banner{display:flex;align-items:center;gap:10px;background:var(--repair-bg);color:var(--repair);border-radius:14px;padding:10px 12px;font-size:13.5px;font-weight:600}
+.role-banner svg{width:18px;height:18px;flex:none}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-weight:600;font-size:14px;
+  z-index:80;opacity:0;transition:.2s;display:flex;align-items:center;gap:8px;max-width:calc(100% - 40px);pointer-events:none}
+.toast svg{width:18px;height:18px;color:var(--accent)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.confirm{display:flex;gap:10px}
+svg.moto{width:24px;height:24px}
+.ico{width:18px;height:18px;flex:none}
+.job .s .ico,.who .ico,.s .ico{width:14px;height:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top" id="top"></header>
+  <main class="view" id="view"></main>
+</div>
+<nav class="nav" id="nav" aria-label="Main">
+  <button data-a="go" data-v="home" id="n-home"><i data-lucide="house"></i>Home</button>
+  <button data-a="go" data-v="jobs" id="n-jobs"><i data-lucide="clipboard-list"></i>Jobs</button>
+  <button class="fab" data-a="newJob" aria-label="New job order"><i data-lucide="plus"></i></button>
+  <button data-a="go" data-v="parts" id="n-parts"><i data-lucide="package"></i>Parts</button>
+  <button data-a="go" data-v="more" id="n-more"><i data-lucide="layout-grid"></i>More</button>
+</nav>
+<div class="scrim" id="scrim" data-a="closeSheet"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true"></section>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== Data model ===== */
+const KEY='talyer-tally.v1';
+const H=3600e3, D=86400e3;
+const ST={queue:{label:'Waiting',icon:'clock'},repair:{label:'Repairing',icon:'wrench'},ready:{label:'For bill-out',icon:'receipt'},paid:{label:'Paid',icon:'badge-check'}};
+const ORDER=['queue','repair','ready','paid'];
+const CATS={oil:{label:'Oil & fluids',icon:'droplet'},engine:{label:'Engine',icon:'cog'},brakes:{label:'Brakes',icon:'disc'},drive:{label:'CVT & drive',icon:'settings-2'},
+  elec:{label:'Electrical',icon:'zap'},tires:{label:'Tires',icon:'circle-dot'},filters:{label:'Filters',icon:'filter'},body:{label:'Body & cables',icon:'cable'}};
+const PAY={cash:{label:'Cash',icon:'banknote'},gcash:{label:'GCash',icon:'smartphone'},maya:{label:'Maya',icon:'wallet'},card:{label:'Card',icon:'credit-card'}};
+const MODELS=['Honda Click 125i','Yamaha NMAX 155','Yamaha Mio i125','Suzuki Raider R150','Honda TMX 155','Honda Beat','Yamaha Aerox 155','Kawasaki Barako 175','Suzuki Smash 115','Honda ADV 160'];
+const PROBLEMS=['Change oil','Tune-up','CVT cleaning','Brake check','Flat tire','Electrical / wiring','Chain & sprocket','Overheating','Hard starting'];
+const LABOR=[['Change oil',100],['Tune-up',350],['CVT cleaning',300],['Brake service',150],['Chain install',250],['Vulcanize',80],['Wiring check',200],['Valve clearance',300]];
+
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+function seed(){
+  const now=Date.now();
+  const parts=[
+    ['p1','Motul 3100 Gold 10W-40 · 1L','Motul','oil',420,310,18,6],
+    ['p2','Shell Advance AX7 · 0.8L','Shell','oil',330,240,12,6],
+    ['p3','Yamalube 4T 20W-40 · 1L','Yamaha','oil',280,200,9,6],
+    ['p4','Scooter gear oil · 120ml','Motul','oil',95,60,24,10],
+    ['p5','Brake fluid DOT 4 · 300ml','Prestone','oil',150,95,4,5],
+    ['p6','Spark plug CPR7EA-9','NGK','engine',160,105,15,6],
+    ['p7','Spark plug C7HSA','NGK','engine',110,70,3,6],
+    ['p8','Clutch lining set (TMX)','Daido','engine',650,450,5,3],
+    ['p9','Air filter (Click 125i)','Honda Genuine','filters',380,270,6,3],
+    ['p10','Oil filter (Raider 150)','Suzuki Genuine','filters',140,90,8,4],
+    ['p11','Brake shoe (Click/Beat)','Elig','brakes',280,180,10,4],
+    ['p12','Front brake pad (NMAX)','RCB','brakes',450,300,2,3],
+    ['p13','Disc pad (Mio i125)','Elig','brakes',320,210,7,3],
+    ['p14','CVT drive belt (Click 125i)','Bando','drive',950,690,4,2],
+    ['p15','Roller weights 12g · set','JVT','drive',380,240,9,3],
+    ['p16','Clutch bell (Mio)','JVT','drive',1250,880,2,2],
+    ['p17','Chain & sprocket set 428','Osaki','drive',1450,1020,3,2],
+    ['p18','Battery YTZ5S','Motolite','elec',1350,980,5,2],
+    ['p19','H4 LED headlight bulb','RTD','elec',650,400,6,3],
+    ['p20','Signal light bulb','Osram','elec',45,25,40,10],
+    ['p21','Tire 80/90-14','IRC','tires',1350,1000,6,2],
+    ['p22','Inner tube 2.75-17','Quick','tires',250,160,1,4],
+    ['p23','Throttle cable (Click)','Honda Genuine','body',230,150,5,2],
+    ['p24','Fuel hose · per meter','Generic','body',60,30,20,5],
+  ].map(([id,name,brand,cat,price,cost,stock,min])=>({id,name,brand,cat,price,cost,stock,min,sku:'SKU-'+id.slice(1).padStart(4,'0')}));
+  const mechanics=[
+    {id:'m1',name:'Mark Dela Cruz',short:'Mark',phone:'0917 555 0142',commission:40},
+    {id:'m2',name:'Ronel Bautista',short:'Ronel',phone:'0928 555 0187',commission:40},
+    {id:'m3',name:'Paolo Aquino',short:'Paolo',phone:'0995 555 0119',commission:35},
+  ];
+  const it=(pid,qty,by,at)=>{const p=parts.find(x=>x.id===pid);return{partId:pid,name:p.name,cat:p.cat,price:p.price,qty,by,at}};
+  const jobs=[
+    {id:'JO-1051',status:'queue',created:now-0.4*H,customer:{name:'Ana Santos',phone:'0917 555 2231'},moto:{model:'Yamaha NMAX 155',plate:'NBC 1294',color:'Matte grey'},
+      problem:'Ayaw umandar sa umaga. Paki-check battery at starter.',mechanicId:'m3',items:[],labor:[],discount:0},
+    {id:'JO-1050',status:'repair',created:now-1.6*H,customer:{name:'Carlo Mendoza',phone:'0908 555 7712'},moto:{model:'Honda Click 125i',plate:'7810 QK',color:'Red'},
+      problem:'May ingay sa panggilid. CVT cleaning at palit belt.',mechanicId:'m1',
+      items:[it('p14',1,'m1',now-1.2*H),it('p15',1,'m1',now-1.1*H),it('p4',1,'m1',now-0.9*H)],labor:[{desc:'CVT cleaning',amount:300}],discount:0},
+    {id:'JO-1049',status:'repair',created:now-2.3*H,customer:{name:'Joy Villanueva',phone:'0939 555 4410'},moto:{model:'Suzuki Raider R150',plate:'4492 TD',color:'Blue'},
+      problem:'Change oil + palit chain & sprocket.',mechanicId:'m2',
+      items:[it('p1',1,'m2',now-2*H),it('p10',1,'m2',now-2*H),it('p17',1,'m2',now-1.5*H)],labor:[{desc:'Change oil',amount:100},{desc:'Chain install',amount:250}],discount:0},
+    {id:'JO-1048',status:'ready',created:now-3.5*H,customer:{name:'Ramil Garcia',phone:'0915 555 8823'},moto:{model:'Honda TMX 155',plate:'MC 3318',color:'Black'},
+      problem:'Mahina preno sa likod, sira signal light.',mechanicId:'m3',
+      items:[it('p11',1,'m3',now-3*H),it('p20',2,'m3',now-2.8*H)],labor:[{desc:'Brake service',amount:150}],discount:20},
+  ];
+  // Paid history across the last 7 days
+  const r=rng(42); let n=1047; const names=['Leo Ramos','Mae Cruz','Jomar Tan','Kris Lim','Bong Reyes','Nina Flores','Dodong Ybañez','Arnel Sy','Cathy Uy','Rey Navarro','Jun-Jun Pacia','Liza Ong','Edgar Tiu','Grace Yap'];
+  const plates=['5521 HK','NAD 8823','1029 ZP','MC 7741','2218 FJ','NEC 4410','8130 KL','3367 RB','NAF 2209','6640 WS','9902 TP','4475 GG','NBB 7018','2286 LM'];
+  for(let d=0;d<7;d++){
+    const cnt=d===0?2:3+Math.floor(r()*3);
+    for(let k=0;k<cnt;k++){
+      const i=(d*3+k)%names.length; const mech=mechanics[Math.floor(r()*3)].id;
+      const day0=new Date(now-d*D); day0.setHours(9,0,0,0);
+      let t=day0.getTime()+r()*8*H; if(t>now-0.5*H) t=now-(0.5+r())*H*(k+1);
+      const pool=['p1','p2','p3','p4','p6','p9','p11','p13','p15','p19','p20','p21','p24','p10','p14'];
+      const items=[]; const ni=1+Math.floor(r()*3);
+      for(let q=0;q<ni;q++){const pid=pool[Math.floor(r()*pool.length)]; if(!items.find(x=>x.partId===pid)) items.push(it(pid,1+(r()<.2?1:0),mech,t-H))}
+      const lab=LABOR[Math.floor(r()*LABOR.length)];
+      const methods=['cash','cash','cash','gcash','gcash','maya'];
+      jobs.push({id:'JO-'+(n--),status:'paid',created:t-1.5*H,customer:{name:names[i],phone:'09'+(10+i)+' 555 '+(1000+i*37)},
+        moto:{model:MODELS[Math.floor(r()*MODELS.length)],plate:plates[i],color:''},problem:lab[0],mechanicId:mech,items,labor:[{desc:lab[0],amount:lab[1]}],discount:0,
+        payment:{method:methods[Math.floor(r()*methods.length)],paidAt:t}});
+    }
+  }
+  return{v:1,shop:{name:'Kuya Jun Motoshop',owner:'Jun',address:'Purok 3, National Highway',footer:'Salamat po! Balik po kayo.'},
+    role:'owner',parts,mechanics,jobs,nextNo:1052};
+}
+function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load()||seed();
+
+/* ===== Helpers ===== */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const peso=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const peso0=n=>'₱'+Math.round(n||0).toLocaleString('en-PH');
+const ICONS={"badge-check":"<path d=\"M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z\" /> <path d=\"m9 12 2 2 4-4\" />","banknote":"<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" /> <path d=\"M6 12h.01M18 12h.01\" />","barcode":"<path d=\"M3 5v14\" /> <path d=\"M8 5v14\" /> <path d=\"M12 5v14\" /> <path d=\"M17 5v14\" /> <path d=\"M21 5v14\" />","bell":"<path d=\"M10.268 21a2 2 0 0 0 3.464 0\" /> <path d=\"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326\" />","boxes":"<path d=\"M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z\" /> <path d=\"m7 16.5-4.74-2.85\" /> <path d=\"m7 16.5 5-3\" /> <path d=\"M7 16.5v5.17\" /> <path d=\"M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z\" /> <path d=\"m17 16.5-5-3\" /> <path d=\"m17 16.5 4.74-2.85\" /> <path d=\"M17 16.5v5.17\" /> <path d=\"M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z\" /> <path d=\"M12 8 7.26 5.15\" /> <path d=\"m12 8 4.74-2.85\" /> <path d=\"M12 13.5V8\" />","cable":"<path d=\"M17 21v-2a1 1 0 0 1-1-1v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1a1 1 0 0 1-1 1\" /> <path d=\"M19 15V6.5a1 1 0 0 0-7 0v11a1 1 0 0 1-7 0V9\" /> <path d=\"M21 21v-2h-4\" /> <path d=\"M3 5h4V3\" /> <path d=\"M7 5a1 1 0 0 1 1 1v1a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a1 1 0 0 1 1-1V3\" />","chart-column":"<path d=\"M3 3v16a2 2 0 0 0 2 2h16\" /> <path d=\"M18 17V9\" /> <path d=\"M13 17V5\" /> <path d=\"M8 17v-3\" />","check":"<path d=\"M20 6 9 17l-5-5\" />","chevron-left":"<path d=\"m15 18-6-6 6-6\" />","chevron-right":"<path d=\"m9 18 6-6-6-6\" />","circle-dot":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"1\" />","clipboard-check":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"m9 14 2 2 4-4\" />","clipboard-list":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"M12 11h4\" /> <path d=\"M12 16h4\" /> <path d=\"M8 11h.01\" /> <path d=\"M8 16h.01\" />","clipboard-plus":"<rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" /> <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" /> <path d=\"M9 14h6\" /> <path d=\"M12 17v-6\" />","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <polyline points=\"12 6 12 12 16 14\" />","coffee":"<path d=\"M10 2v2\" /> <path d=\"M14 2v2\" /> <path d=\"M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1\" /> <path d=\"M6 2v2\" />","cog":"<path d=\"M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z\" /> <path d=\"M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z\" /> <path d=\"M12 2v2\" /> <path d=\"M12 22v-2\" /> <path d=\"m17 20.66-1-1.73\" /> <path d=\"M11 10.27 7 3.34\" /> <path d=\"m20.66 17-1.73-1\" /> <path d=\"m3.34 7 1.73 1\" /> <path d=\"M14 12h8\" /> <path d=\"M2 12h2\" /> <path d=\"m20.66 7-1.73 1\" /> <path d=\"m3.34 17 1.73-1\" /> <path d=\"m17 3.34-1 1.73\" /> <path d=\"m11 13.73-4 6.93\" />","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" /> <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />","credit-card":"<rect width=\"20\" height=\"14\" x=\"2\" y=\"5\" rx=\"2\" /> <line x1=\"2\" x2=\"22\" y1=\"10\" y2=\"10\" />","disc":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\" />","file-text":"<path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\" /> <path d=\"M14 2v4a2 2 0 0 0 2 2h4\" /> <path d=\"M10 9H8\" /> <path d=\"M16 13H8\" /> <path d=\"M16 17H8\" />","filter":"<polygon points=\"22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3\" />","hand-coins":"<path d=\"M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17\" /> <path d=\"m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9\" /> <path d=\"m2 16 6 6\" /> <circle cx=\"16\" cy=\"9\" r=\"2.9\" /> <circle cx=\"6\" cy=\"5\" r=\"3\" />","hard-hat":"<path d=\"M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5\" /> <path d=\"M14 6a6 6 0 0 1 6 6v3\" /> <path d=\"M4 15v-3a6 6 0 0 1 6-6\" /> <rect x=\"2\" y=\"15\" width=\"20\" height=\"4\" rx=\"1\" />","hash":"<line x1=\"4\" x2=\"20\" y1=\"9\" y2=\"9\" /> <line x1=\"4\" x2=\"20\" y1=\"15\" y2=\"15\" /> <line x1=\"10\" x2=\"8\" y1=\"3\" y2=\"21\" /> <line x1=\"16\" x2=\"14\" y1=\"3\" y2=\"21\" />","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" /> <path d=\"M12 7v5l4 2\" />","house":"<path d=\"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8\" /> <path d=\"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\" />","info":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <path d=\"M12 16v-4\" /> <path d=\"M12 8h.01\" />","layers":"<path d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\" /> <path d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\" /> <path d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\" />","layout-grid":"<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\" /> <rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\" /> <rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\" />","map-pin":"<path d=\"M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0\" /> <circle cx=\"12\" cy=\"10\" r=\"3\" />","message-square-text":"<path d=\"M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z\" /> <path d=\"M13 8H7\" /> <path d=\"M17 12H7\" />","package":"<path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\" /> <path d=\"M12 22V12\" /> <path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\" /> <path d=\"m7.5 4.27 9 5.15\" />","package-open":"<path d=\"M12 22v-9\" /> <path d=\"M15.17 2.21a1.67 1.67 0 0 1 1.63 0L21 4.57a1.93 1.93 0 0 1 0 3.36L8.82 14.79a1.655 1.655 0 0 1-1.64 0L3 12.43a1.93 1.93 0 0 1 0-3.36z\" /> <path d=\"M20 13v3.87a2.06 2.06 0 0 1-1.11 1.83l-6 3.08a1.93 1.93 0 0 1-1.78 0l-6-3.08A2.06 2.06 0 0 1 4 16.87V13\" /> <path d=\"M21 12.43a1.93 1.93 0 0 0 0-3.36L8.83 2.2a1.64 1.64 0 0 0-1.63 0L3 4.57a1.93 1.93 0 0 0 0 3.36l12.18 6.86a1.636 1.636 0 0 0 1.63 0z\" />","package-plus":"<path d=\"M16 16h6\" /> <path d=\"M19 13v6\" /> <path d=\"M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14\" /> <path d=\"m7.5 4.27 9 5.15\" /> <polyline points=\"3.29 7 12 12 20.71 7\" /> <line x1=\"12\" x2=\"12\" y1=\"22\" y2=\"12\" />","palette":"<circle cx=\"13.5\" cy=\"6.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"17.5\" cy=\"10.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"8.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" /> <circle cx=\"6.5\" cy=\"12.5\" r=\".5\" fill=\"currentColor\" /> <path d=\"M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z\" />","pencil":"<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /> <path d=\"m15 5 4 4\" />","percent":"<line x1=\"19\" x2=\"5\" y1=\"5\" y2=\"19\" /> <circle cx=\"6.5\" cy=\"6.5\" r=\"2.5\" /> <circle cx=\"17.5\" cy=\"17.5\" r=\"2.5\" />","phone":"<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\" />","play":"<polygon points=\"6 3 20 12 6 21 6 3\" />","plus":"<path d=\"M5 12h14\" /> <path d=\"M12 5v14\" />","receipt":"<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\" /> <path d=\"M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8\" /> <path d=\"M12 17.5v-11\" />","rectangle-horizontal":"<rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" />","repeat":"<path d=\"m17 2 4 4-4 4\" /> <path d=\"M3 11v-1a4 4 0 0 1 4-4h14\" /> <path d=\"m7 22-4-4 4-4\" /> <path d=\"M21 13v1a4 4 0 0 1-4 4H3\" />","rotate-ccw":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\" /> <path d=\"M3 3v5h5\" />","scan-barcode":"<path d=\"M3 7V5a2 2 0 0 1 2-2h2\" /> <path d=\"M17 3h2a2 2 0 0 1 2 2v2\" /> <path d=\"M21 17v2a2 2 0 0 1-2 2h-2\" /> <path d=\"M7 21H5a2 2 0 0 1-2-2v-2\" /> <path d=\"M8 7v10\" /> <path d=\"M12 7v10\" /> <path d=\"M17 7v10\" />","search":"<circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />","search-x":"<path d=\"m13.5 8.5-5 5\" /> <path d=\"m8.5 8.5 5 5\" /> <circle cx=\"11\" cy=\"11\" r=\"8\" /> <path d=\"m21 21-4.3-4.3\" />","send":"<path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" /> <path d=\"m21.854 2.147-10.94 10.939\" />","settings-2":"<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />","smartphone":"<rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" /> <path d=\"M12 18h.01\" />","store":"<path d=\"m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7\" /> <path d=\"M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8\" /> <path d=\"M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4\" /> <path d=\"M2 7h20\" /> <path d=\"M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7\" />","sun-moon":"<path d=\"M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.9 4.9 1.4 1.4\" /> <path d=\"m17.7 17.7 1.4 1.4\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.3 17.7-1.4 1.4\" /> <path d=\"m19.1 4.9-1.4 1.4\" />","tag":"<path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\" /> <circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\" />","trash-2":"<path d=\"M3 6h18\" /> <path d=\"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6\" /> <path d=\"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2\" /> <line x1=\"10\" x2=\"10\" y1=\"11\" y2=\"17\" /> <line x1=\"14\" x2=\"14\" y1=\"11\" y2=\"17\" />","trending-up":"<polyline points=\"22 7 13.5 15.5 8.5 10.5 2 17\" /> <polyline points=\"16 7 22 7 22 13\" />","triangle-alert":"<path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" /> <path d=\"M12 9v4\" /> <path d=\"M12 17h.01\" />","truck":"<path d=\"M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2\" /> <path d=\"M15 18H9\" /> <path d=\"M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14\" /> <circle cx=\"17\" cy=\"18\" r=\"2\" /> <circle cx=\"7\" cy=\"18\" r=\"2\" />","undo-2":"<path d=\"M9 14 4 9l5-5\" /> <path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\" />","user":"<path d=\"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2\" /> <circle cx=\"12\" cy=\"7\" r=\"4\" />","user-plus":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <line x1=\"19\" x2=\"19\" y1=\"8\" y2=\"14\" /> <line x1=\"22\" x2=\"16\" y1=\"11\" y2=\"11\" />","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" /> <circle cx=\"9\" cy=\"7\" r=\"4\" /> <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" /> <path d=\"M16 3.13a4 4 0 0 1 0 7.75\" />","wallet":"<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\" /> <path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\" />","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\" />","x":"<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />","sun":"<circle cx=\"12\" cy=\"12\" r=\"4\" /> <path d=\"M12 2v2\" /> <path d=\"M12 20v2\" /> <path d=\"m4.93 4.93 1.41 1.41\" /> <path d=\"m17.66 17.66 1.41 1.41\" /> <path d=\"M2 12h2\" /> <path d=\"M20 12h2\" /> <path d=\"m6.34 17.66-1.41 1.41\" /> <path d=\"m19.07 4.93-1.41 1.41\" />","calendar-days":"<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" /> <path d=\"M8 14h.01\" /> <path d=\"M12 14h.01\" /> <path d=\"M16 14h.01\" /> <path d=\"M8 18h.01\" /> <path d=\"M12 18h.01\" /> <path d=\"M16 18h.01\" />","calendar-range":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M16 2v4\" /> <path d=\"M3 10h18\" /> <path d=\"M8 2v4\" /> <path d=\"M17 14h-6\" /> <path d=\"M13 18H7\" /> <path d=\"M7 14h.01\" /> <path d=\"M17 18h.01\" />","calendar-cog":"<path d=\"m15.2 16.9-.9-.4\" /> <path d=\"m15.2 19.1-.9.4\" /> <path d=\"M16 2v4\" /> <path d=\"m16.9 15.2-.4-.9\" /> <path d=\"m16.9 20.8-.4.9\" /> <path d=\"m19.5 14.3-.4.9\" /> <path d=\"m19.5 21.7-.4-.9\" /> <path d=\"M21 10.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6\" /> <path d=\"m21.7 16.5-.9.4\" /> <path d=\"m21.7 19.5-.9-.4\" /> <path d=\"M3 10h18\" /> <path d=\"M8 2v4\" /> <circle cx=\"18\" cy=\"18\" r=\"3\" />","calendar-arrow-up":"<path d=\"m14 18 4-4 4 4\" /> <path d=\"M16 2v4\" /> <path d=\"M18 22v-8\" /> <path d=\"M21 11.343V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9\" /> <path d=\"M3 10h18\" /> <path d=\"M8 2v4\" />","calendar-arrow-down":"<path d=\"m14 18 4 4 4-4\" /> <path d=\"M16 2v4\" /> <path d=\"M18 14v8\" /> <path d=\"M21 11.354V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7.343\" /> <path d=\"M3 10h18\" /> <path d=\"M8 2v4\" />","calendar":"<path d=\"M8 2v4\" /> <path d=\"M16 2v4\" /> <rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\" /> <path d=\"M3 10h18\" />"};
+const ic=(n,cls='')=>`<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const MOTO='<svg class="moto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="16.5" r="3"/><circle cx="19" cy="16.5" r="3"/><path d="M5 16.5h3l3-5h4.5l3.5 5"/><path d="M14 11.5 12.5 7H16"/><path d="M8.5 11.5H11"/></svg>';
+const hhmm=t=>new Date(t).toLocaleTimeString('en-PH',{hour:'numeric',minute:'2-digit'});
+const dayKey=t=>{const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()};
+const isToday=t=>dayKey(t)===dayKey(Date.now());
+const iso=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fromIso=v=>{const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d).getTime()};
+const dshort=t=>new Date(t).toLocaleDateString('en-PH',{month:'short',day:'numeric'});
+const plateTag=(p,big)=>p?`<span class="plate${big?' big':''}">${esc(p)}</span>`:'';
+const ckey=j=>j.moto.plate||('~'+j.customer.name.toLowerCase());
+const when=t=>isToday(t)?hhmm(t):new Date(t).toLocaleDateString('en-PH',{month:'short',day:'numeric'})+' · '+hhmm(t);
+const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':Math.floor(m/60)+'h '+(m%60)+'m ago'};
+const job=id=>S.jobs.find(j=>j.id===id);
+const part=id=>S.parts.find(p=>p.id===id);
+const mech=id=>S.mechanics.find(m=>m.id===id);
+const initials=n=>String(n||'?').split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const isOwner=()=>S.role==='owner';
+const me=()=>isOwner()?{name:'Boss '+S.shop.owner,short:S.shop.owner}:mech(S.role);
+const myId=()=>isOwner()?'owner':S.role;
+function totals(j){const parts=j.items.reduce((a,x)=>a+x.price*x.qty,0);const labor=j.labor.reduce((a,x)=>a+Number(x.amount),0);const sub=parts+labor;return{parts,labor,sub,discount:Math.min(j.discount||0,sub),total:Math.max(0,sub-(j.discount||0)),count:j.items.reduce((a,x)=>a+x.qty,0)}}
+const pill=s=>`<span class="pill s-${s}">${ic(ST[s].icon)}${ST[s].label}</span>`;
+const lowParts=()=>S.parts.filter(p=>p.stock<=p.min);
+function toast(msg,icon='check'){const t=$('#toast');t.innerHTML=ic(icon)+esc(msg);icons();t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),1900)}
+function icons(){document.querySelectorAll('i[data-lucide]').forEach(i=>{i.outerHTML=ic(i.dataset.lucide)})}
+
+/* ===== Router ===== */
+let R={name:'home',id:null,back:null};
+const UI={jobFilter:'active',jobQ:'',partCat:'all',partQ:'',pickCat:'all',pickQ:'',period:7,from:iso(Date.now()-6*D),to:iso(Date.now())};
+function go(name,id=null,back=null){R={name,id,back};render();window.scrollTo(0,0)}
+
+function header(){
+  const titles={home:null,jobs:'Job orders',parts:'Parts & stock',more:'More',mechanics:'Mechanics',customers:'Customers',reports:'Reports',settings:'Shop settings'};
+  const u=me(); const roleBtn=`<button class="avatar" data-a="roleSheet" aria-label="Switch user" style="${isOwner()?'':'background:var(--repair);color:#fff'}">${esc(initials(u.name))}</button>`;
+  const low=lowParts().length;
+  if(R.name==='job'){const j=job(R.id);
+    return `<button class="icon-btn" data-a="go" data-v="${R.back||'jobs'}" aria-label="Back">${ic('chevron-left')}</button>
+      <div class="grow"><div class="eyebrow jo">${esc(j.id)}</div><h1>${esc(j.customer.name)}</h1></div>${roleBtn}`}
+  if(R.name==='home'){const h=new Date().getHours();const g=h<11?'Magandang umaga':h<13?'Magandang tanghali':h<18?'Magandang hapon':'Magandang gabi';
+    return `<div class="grow"><div class="eyebrow">${esc(S.shop.name)}</div><h1>${g}, ${esc(u.short)}</h1></div>
+      <button class="icon-btn" data-a="lowSheet" aria-label="Low stock alerts">${ic('bell')}${low?'<span class="dot"></span>':''}</button>${roleBtn}`}
+  const sub=['mechanics','customers','reports','settings'].includes(R.name);
+  return `${sub?`<button class="icon-btn" data-a="go" data-v="more" aria-label="Back">${ic('chevron-left')}</button>`:''}
+    <div class="grow"><div class="eyebrow">${esc(S.shop.name)}</div><h1>${titles[R.name]}</h1></div>
+    ${R.name==='parts'&&isOwner()?`<button class="icon-btn" data-a="partSheet" aria-label="Add part" style="background:var(--accent);color:var(--accent-ink)">${ic('package-plus')}</button>`:''}${roleBtn}`;
+}
+
+function render(){
+  $('#top').innerHTML=header();
+  const V={home,jobs:jobsView,job:jobView,parts:partsView,more:moreView,mechanics:mechView,customers:custView,reports:reportView,settings:settingsView}[R.name];
+  $('#view').innerHTML=V();
+  const navKey={home:'home',jobs:'jobs',job:'jobs',parts:'parts'}[R.name]||'more';
+  document.querySelectorAll('.nav button[id]').forEach(b=>b.classList.toggle('on',b.id==='n-'+navKey));
+  icons(); save();
+}
+
+/* ===== Views ===== */
+function visibleJobs(){return isOwner()?S.jobs:S.jobs.filter(j=>j.mechanicId===S.role)}
+function jobCard(j){
+  const t=totals(j); const m=mech(j.mechanicId);
+  const cls={queue:'s-queue',repair:'s-repair',ready:'s-ready',paid:'s-paid'}[j.status];
+  return `<button class="card job" data-a="openJob" data-v="${j.id}">
+    <span class="mi ${cls}">${MOTO}</span>
+    <span class="mid"><span class="t">${esc(j.moto.model)}</span>
+      <span class="s">${plateTag(j.moto.plate)}${esc(j.customer.name.split(' ')[0])} · ${ic('hard-hat','')}${esc(m?m.short:'—')}</span></span>
+    <span class="r"><span class="amt">${peso0(t.total)}</span>${pill(j.status)}</span></button>`;
+}
+function home(){
+  const vj=visibleJobs();
+  const active=vj.filter(j=>j.status!=='paid').sort((a,b)=>ORDER.indexOf(b.status)-ORDER.indexOf(a.status)||a.created-b.created);
+  const paidToday=vj.filter(j=>j.status==='paid'&&isToday(j.payment.paidAt));
+  const sales=paidToday.reduce((a,j)=>a+totals(j).total,0);
+  const ready=vj.filter(j=>j.status==='ready').length;
+  const low=lowParts().length;
+  const owner=isOwner();
+  return `
+  ${owner?'':`<div class="role-banner">${ic('hard-hat')}Mechanic view: you see your own jobs and can take parts. Billing is done by the owner.</div>`}
+  <div class="tiles">
+    ${owner?`<button class="tile hero" data-a="go" data-v="reports"><div><div class="l">Today's sales · ${paidToday.length} paid</div><div class="v">${peso(sales)}</div></div><span class="ic">${ic('trending-up')}</span></button>`:''}
+    <button class="tile" data-a="jobFilter" data-v="active"><span class="ic s-repair">${MOTO}</span><span class="v">${active.length}</span><span class="l">Motors in the shop</span></button>
+    <button class="tile" data-a="jobFilter" data-v="ready"><span class="ic s-ready">${ic('receipt')}</span><span class="v">${ready}</span><span class="l">Ready for bill-out</span></button>
+    ${owner?`<button class="tile" data-a="partFilter" data-v="low"><span class="ic s-low">${ic('triangle-alert')}</span><span class="v">${low}</span><span class="l">Parts low on stock</span></button>
+    <button class="tile" data-a="go" data-v="mechanics"><span class="ic s-paid">${ic('users')}</span><span class="v">${S.mechanics.length}</span><span class="l">Mechanics on duty</span></button>`:
+    `<button class="tile" data-a="jobFilter" data-v="paid"><span class="ic s-paid">${ic('badge-check')}</span><span class="v">${paidToday.length}</span><span class="l">Finished today</span></button>`}
+  </div>
+  <div class="quick">
+    <button class="qa" data-a="newJob"><span class="b">${ic('clipboard-plus')}</span>New job</button>
+    <button class="qa" data-a="takeAny"><span class="b">${ic('package-open')}</span>Take parts</button>
+    ${owner?`<button class="qa" data-a="billAny"><span class="b">${ic('hand-coins')}</span>Bill out</button>
+    <button class="qa" data-a="go" data-v="reports"><span class="b">${ic('chart-column')}</span>Reports</button>`:
+    `<button class="qa" data-a="go" data-v="parts"><span class="b">${ic('search')}</span>Find part</button>
+    <button class="qa" data-a="go" data-v="customers"><span class="b">${ic('history')}</span>History</button>`}
+  </div>
+  <div class="sec-h"><h2>In the shop now</h2><button class="link" data-a="jobFilter" data-v="active">See all${ic('chevron-right')}</button></div>
+  <div class="list">${active.length?active.map(jobCard).join(''):`<div class="card empty">${MOTO}Walang motor sa shop ngayon. Tap + to log a new job.</div>`}</div>`;
+}
+
+function jobsView(){
+  const vj=visibleJobs();
+  const f=[['active','In shop','wrench',vj.filter(j=>j.status!=='paid').length],['queue','Waiting','clock'],['repair','Repairing','wrench'],['ready','Bill-out','receipt'],['paid','Paid','badge-check']]
+    .map(([k,l,i,n])=>[k,l,i,n??vj.filter(j=>j.status===k).length]);
+  return `<div class="search">${ic('search')}<input id="jobQ" data-in="jobQ" placeholder="Search name, plate, JO number" value="${esc(UI.jobQ)}"></div>
+  <div class="chips">${f.map(([k,l,i,n])=>`<button class="chip ${UI.jobFilter===k?'on':''}" data-a="jobFilter" data-v="${k}">${ic(i)}${l}<span class="n">${n}</span></button>`).join('')}</div>
+  <div class="list" id="jobList">${jobListHtml()}</div>`;
+}
+function jobListHtml(){
+  const q=UI.jobQ.trim().toLowerCase();
+  let list=visibleJobs().filter(j=>UI.jobFilter==='active'?j.status!=='paid':j.status===UI.jobFilter)
+    .filter(j=>!q||[j.id,j.customer.name,j.moto.plate,j.moto.model].join(' ').toLowerCase().includes(q));
+  list.sort((a,b)=>UI.jobFilter==='paid'?b.payment.paidAt-a.payment.paidAt:a.created-b.created);
+  if(UI.jobFilter==='paid') list=list.slice(0,40);
+  return list.length?list.map(jobCard).join(''):`<div class="card empty">${ic('search-x')}No jobs here.</div>`;
+}
+
+function jobView(){
+  const j=job(R.id); if(!j) return '<div class="card empty">Job not found.</div>';
+  const t=totals(j); const m=mech(j.mechanicId); const si=ORDER.indexOf(j.status); const locked=j.status==='paid';
+  const canEdit=!locked&&(isOwner()||j.mechanicId===S.role);
+  const items=j.items.map((x,i)=>{const by=x.by==='owner'?S.shop.owner:(mech(x.by)?.short||'—');return `
+    <div class="row"><span class="ci">${ic(CATS[x.cat].icon)}</span>
+      <div class="mid"><div class="t">${esc(x.name)}</div><div class="s"><span class="who">${ic('hard-hat')}${esc(by)}</span> · ${when(x.at)} · ${peso0(x.price)} each</div></div>
+      <div class="end">${canEdit?`<div class="stepper"><button data-a="qty" data-v="${i}:-1" aria-label="Less">${ic(x.qty>1?'minus':'trash-2')}</button><b>${x.qty}</b><button data-a="qty" data-v="${i}:1" aria-label="More">${ic('plus')}</button></div>`:`<b>×${x.qty}</b>`}
+      <span class="amt" style="font-size:13.5px">${peso(x.price*x.qty)}</span></div></div>`}).join('');
+  const labor=j.labor.map((x,i)=>`<div class="row"><span class="ci">${ic('wrench')}</span><div class="mid"><div class="t">${esc(x.desc)}</div><div class="s">Labor</div></div>
+    <div class="end" style="flex-direction:row;align-items:center;gap:8px"><span class="amt">${peso(x.amount)}</span>${canEdit?`<button class="icon-btn" style="width:32px;height:32px;border-radius:10px;box-shadow:none;background:var(--surface-2)" data-a="delLabor" data-v="${i}" aria-label="Remove">${ic('x')}</button>`:''}</div></div>`).join('');
+  let action='';
+  if(j.status==='queue') action=canEdit?`<button class="btn dark" data-a="setStatus" data-v="repair">${ic('play')}Start repair</button>`:'';
+  if(j.status==='repair') action=canEdit?`<button class="btn dark" data-a="setStatus" data-v="ready">${ic('send')}Tapos na · send for bill-out</button>`:'';
+  if(j.status==='ready') action=isOwner()?`<div class="confirm"><button class="btn ghost" style="width:auto" data-a="setStatus" data-v="repair" aria-label="Back to repair">${ic('rotate-ccw')}</button><button class="btn" data-a="billSheet" data-v="${j.id}">${ic('hand-coins')}Bill out ${peso0(t.total)}</button></div>`
+    :`<div class="role-banner">${ic('clock')}Waiting for the owner to bill out.</div>`;
+  if(j.status==='paid') action=`<button class="btn dark" data-a="receipt" data-v="${j.id}">${ic('receipt')}View receipt</button>`;
+  return `
+  <div class="card jhero">
+    <div class="top-r"><div><div class="model">${esc(j.moto.model)}</div><div class="s" style="color:var(--muted);font-size:13px;margin-top:2px">${esc(j.moto.color||'')}${j.moto.color?' · ':''}In since ${when(j.created)}</div></div>${plateTag(j.moto.plate,1)}</div>
+    <div class="kv">
+      <span class="k">${ic('user')}Owner</span><span class="v">${esc(j.customer.name)}</span>
+      <span class="k">${ic('phone')}Phone</span><span class="v" style="display:flex;align-items:center;gap:8px">${esc(j.customer.phone||'—')}${j.customer.phone?`<button data-a="copy" data-v="${esc(j.customer.phone)}" aria-label="Copy number" style="color:var(--accent);display:grid">${ic('copy')}</button>`:''}</span>
+      <span class="k">${ic('hard-hat')}Mechanic</span><span class="v">${isOwner()&&!locked?`<button data-a="assignSheet" data-v="${j.id}" style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--accent)">${esc(m?m.name:'Assign')}${ic('pencil')}</button>`:esc(m?m.name:'—')}</span>
+    </div>
+    <div class="problem">${ic('message-square-text')}<span>${esc(j.problem||'No notes')}</span></div>
+  </div>
+  <div class="track">${ORDER.map((s,i)=>`<div class="st ${i<si||(locked&&i===si)?'done':i===si?'cur':''}">${ic(ST[s].icon)}${ST[s].label}</div>`).join('')}</div>
+  <div class="sec-h"><h2>Parts taken <span class="badge" style="vertical-align:3px">${t.count}</span></h2>${canEdit?`<button class="btn sm" data-a="pickSheet" data-v="${j.id}">${ic('package-plus')}Take part</button>`:''}</div>
+  <div class="card" style="padding-block:4px">${items||`<div class="empty">${ic('package-open')}Wala pang parts na kinuha.${canEdit?' Tap “Take part” when the mechanic pulls something off the shelf.':''}</div>`}</div>
+  <div class="sec-h"><h2>Labor</h2>${canEdit?`<button class="btn sm ghost" data-a="laborSheet" data-v="${j.id}">${ic('plus')}Add labor</button>`:''}</div>
+  <div class="card" style="padding-block:4px">${labor||`<div class="empty" style="padding:14px">${ic('wrench')}No labor charge yet.</div>`}</div>
+  <div class="card sum">
+    <div class="l"><span>${ic('package')}Parts (${t.count})</span><span>${peso(t.parts)}</span></div>
+    <div class="l"><span>${ic('wrench')}Labor</span><span>${peso(t.labor)}</span></div>
+    <div class="l"><span>${ic('percent')}Discount ${isOwner()&&!locked?`<button data-a="discSheet" data-v="${j.id}" style="color:var(--accent);font-weight:600;font-size:13px">Edit</button>`:''}</span><span>${t.discount?'−'+peso(t.discount):peso(0)}</span></div>
+    <div class="l tot"><span>Total to pay</span><span class="big">${peso(t.total)}</span></div>
+    ${locked?`<div class="l"><span>${ic(PAY[j.payment.method].icon)}Paid via ${PAY[j.payment.method].label}</span><span>${when(j.payment.paidAt)}</span></div>`:''}
+  </div>
+  ${action}`;
+}
+
+function partsView(){
+  const low=lowParts().length;
+  const value=S.parts.reduce((a,p)=>a+p.cost*p.stock,0);
+  return `<div class="search">${ic('search')}<input id="partQ" data-in="partQ" placeholder="Search part, brand, SKU" value="${esc(UI.partQ)}"></div>
+  <div class="chips"><button class="chip ${UI.partCat==='all'?'on':''}" data-a="partFilter" data-v="all">${ic('layers')}All</button>
+    <button class="chip ${UI.partCat==='low'?'on':''}" data-a="partFilter" data-v="low">${ic('triangle-alert')}Low stock<span class="n">${low}</span></button>
+    ${Object.entries(CATS).map(([k,c])=>`<button class="chip ${UI.partCat===k?'on':''}" data-a="partFilter" data-v="${k}">${ic(c.icon)}${c.label}</button>`).join('')}</div>
+  ${isOwner()?`<div class="tiles"><div class="tile"><span class="v">${S.parts.length}</span><span class="l">Items on the shelf</span></div><div class="tile"><span class="v">${peso0(value)}</span><span class="l">Stock value at cost</span></div></div>`:''}
+  <div class="card" style="padding-block:4px" id="partList">${partListHtml()}</div>`;
+}
+function partListHtml(){
+  const q=UI.partQ.trim().toLowerCase();
+  const list=S.parts.filter(p=>UI.partCat==='all'||(UI.partCat==='low'?p.stock<=p.min:p.cat===UI.partCat))
+    .filter(p=>!q||[p.name,p.brand,p.sku].join(' ').toLowerCase().includes(q));
+  if(!list.length) return `<div class="empty">${ic('search-x')}No parts found.</div>`;
+  return list.map(p=>{const low=p.stock<=p.min;const pct=Math.min(100,p.stock/Math.max(p.min*3,1)*100);
+    return `<button class="row" data-a="partSheet" data-v="${p.id}"><span class="ci">${ic(CATS[p.cat].icon)}</span>
+      <span class="mid"><span class="t" style="display:block">${esc(p.name)}</span><span class="s" style="display:block">${esc(p.brand)} · <span class="jo">${p.sku}</span></span></span>
+      <span class="end"><span class="amt">${peso0(p.price)}</span><span class="stock ${low?'low':''}">${low?'Low · ':''}${p.stock} left</span><span class="bar"><i class="${low?'low':''}" style="width:${pct}%"></i></span></span></button>`}).join('');
+}
+
+function moreView(){
+  const u=me(); const owner=isOwner();
+  const items=[
+    ['mechanics','users','Mechanics','Jobs, labor and commission',owner],
+    ['customers','history','Customers & motors','Service history by plate',true],
+    ['reports','chart-column','Reports','Sales, top parts, payments',owner],
+    ['settings','store','Shop settings','Name, address, receipt footer',owner],
+  ].filter(x=>x[4]);
+  return `<button class="card job" data-a="roleSheet"><span class="avatar" style="${owner?'':'background:var(--repair);color:#fff'}">${esc(initials(u.name))}</span>
+    <span class="mid"><span class="t">${esc(u.name)}</span><span class="s">${owner?'Owner · full access':'Mechanic · own jobs only'}</span></span><span class="pill s-repair">${ic('repeat')}Switch</span></button>
+  <div class="card menu" style="padding-block:2px">${items.map(([k,i,t,s])=>`<button class="row" data-a="go" data-v="${k}"><span class="ci">${ic(i)}</span><span class="mid"><span class="t" style="display:block">${t}</span><span class="s" style="display:block">${s}</span></span>${ic('chevron-right','chev')}</button>`).join('')}</div>
+  <div class="card menu" style="padding-block:2px">
+    <button class="row" data-a="toggleTheme"><span class="ci">${ic('sun-moon')}</span><span class="mid"><span class="t" style="display:block">Light / dark</span><span class="s" style="display:block">Switch the app theme</span></span>${ic('chevron-right','chev')}</button>
+    <button class="row" data-a="resetAsk"><span class="ci" style="color:var(--danger);background:var(--danger-bg)">${ic('rotate-ccw')}</span><span class="mid"><span class="t" style="display:block">Reset demo data</span><span class="s" style="display:block">Bring back the sample shop</span></span>${ic('chevron-right','chev')}</button>
+  </div>
+  <p style="color:var(--muted);font-size:12.5px;text-align:center;margin:0">Prototype · data is saved on this device only</p>`;
+}
+
+function weekFrom(){const d=new Date();d.setHours(0,0,0,0);return d.getTime()-6*D}
+function mechView(){
+  const from=weekFrom();
+  return `<div class="list">${S.mechanics.map(m=>{
+    const mine=S.jobs.filter(j=>j.mechanicId===m.id);
+    const active=mine.filter(j=>j.status!=='paid');
+    const week=mine.filter(j=>j.status==='paid'&&j.payment.paidAt>=from);
+    const labor=week.reduce((a,j)=>a+totals(j).labor,0);
+    const today=mine.filter(j=>j.status==='paid'&&isToday(j.payment.paidAt)).length;
+    return `<div class="card" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:12px"><span class="avatar">${initials(m.name)}</span><div style="flex:1;min-width:0"><div style="font-weight:700">${esc(m.name)}</div><div style="font-size:13px;color:var(--muted)">${esc(m.phone)} · ${m.commission}% of labor</div></div>
+      ${active.length?`<span class="pill s-repair">${ic('wrench')}${active.length} active</span>`:`<span class="pill s-paid">${ic('coffee')}Free</span>`}</div>
+      <div class="grid2" style="grid-template-columns:repeat(3,1fr);text-align:center">
+        <div><div class="amt" style="font-size:18px;font-family:var(--f-display)">${today}</div><div style="font-size:12px;color:var(--muted)">Done today</div></div>
+        <div><div class="amt" style="font-size:18px;font-family:var(--f-display)">${peso0(labor)}</div><div style="font-size:12px;color:var(--muted)">Labor · 7 days</div></div>
+        <div><div class="amt" style="font-size:18px;font-family:var(--f-display);color:var(--paid)">${peso0(labor*m.commission/100)}</div><div style="font-size:12px;color:var(--muted)">Commission</div></div>
+      </div></div>`}).join('')}</div>
+  <button class="btn ghost" data-a="mechSheet">${ic('user-plus')}Add mechanic</button>`;
+}
+
+function custView(){
+  const map={};
+  S.jobs.forEach(j=>{const k=ckey(j);(map[k]=map[k]||{key:k,plate:j.moto.plate,model:j.moto.model,name:j.customer.name,phone:j.customer.phone,jobs:[]}).jobs.push(j)});
+  const list=Object.values(map).map(c=>({...c,last:Math.max(...c.jobs.map(j=>j.created)),spent:c.jobs.filter(j=>j.status==='paid').reduce((a,j)=>a+totals(j).total,0)})).sort((a,b)=>b.last-a.last);
+  return `<div class="card" style="padding-block:4px">${list.map(c=>`<button class="row" data-a="custSheet" data-v="${esc(c.key)}"><span class="ci">${MOTO}</span>
+    <span class="mid"><span class="t" style="display:block">${esc(c.name)}</span><span class="s" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">${plateTag(c.plate)}${esc(c.model)}</span></span>
+    <span class="end"><span class="amt">${peso0(c.spent)}</span><span class="stock">${c.jobs.length} visit${c.jobs.length>1?'s':''}</span></span></button>`).join('')}</div>`;
+}
+
+function reportRange(){const s=new Date();s.setHours(0,0,0,0);const today=s.getTime();
+  if(UI.period==='custom'){let a=fromIso(UI.from),b=fromIso(UI.to);if(a>b)[a,b]=[b,a];return{from:a,to:b+D}}
+  return{from:today-(UI.period-1)*D,to:today+D}}
+function reportView(){
+  const P=UI.period; const {from,to}=reportRange(); const nDays=Math.round((to-from)/D);
+  const paid=S.jobs.filter(j=>j.status==='paid'&&j.payment.paidAt>=from&&j.payment.paidAt<to);
+  const T=paid.reduce((a,j)=>{const t=totals(j);a.s+=t.total;a.p+=t.parts;a.l+=t.labor;a.d+=t.discount;return a},{s:0,p:0,l:0,d:0});
+  const profit=paid.reduce((a,j)=>a+j.items.reduce((b,x)=>b+(x.price-(part(x.partId)?.cost??x.price))*x.qty,0),0);
+  const cn=Math.max(7,Math.min(nDays,62)); const cstart=to-cn*D;
+  const days=[...Array(cn)].map((_,i)=>{const t=cstart+i*D;const v=S.jobs.filter(j=>j.status==='paid'&&dayKey(j.payment.paidAt)===dayKey(t)).reduce((a,j)=>a+totals(j).total,0);return{t,v,today:isToday(t),out:t<from}});
+  const max=Math.max(...days.map(d=>d.v),1);
+  const pm={};paid.forEach(j=>{pm[j.payment.method]=(pm[j.payment.method]||0)+totals(j).total});
+  const tp={};paid.forEach(j=>j.items.forEach(x=>{tp[x.partId]=tp[x.partId]||{name:x.name,cat:x.cat,q:0,v:0};tp[x.partId].q+=x.qty;tp[x.partId].v+=x.qty*x.price}));
+  const top=Object.values(tp).sort((a,b)=>b.v-a.v).slice(0,5);
+  const k=n=>n>=1000?(n/1000).toFixed(n>=10000?0:1)+'k':Math.round(n);
+  const label=nDays===1?dshort(from)+', '+new Date(from).getFullYear():dshort(from)+' – '+dshort(to-D)+', '+new Date(to-D).getFullYear();
+  return `<div class="chips">${[[1,'Today','sun'],[7,'7 days','calendar-days'],[30,'30 days','calendar-range'],['custom','Custom','calendar-cog']].map(([v,l,i])=>`<button class="chip ${P===v?'on':''}" data-a="period" data-v="${v}">${ic(i)}${l}</button>`).join('')}</div>
+  ${P==='custom'?`<div class="card range-card"><div class="grid2">
+    <div class="field"><label for="rep-from">${ic('calendar-arrow-up')}From</label><input class="inp" type="date" id="rep-from" data-ch="from" value="${UI.from}" max="${iso(Date.now())}"></div>
+    <div class="field"><label for="rep-to">${ic('calendar-arrow-down')}To</label><input class="inp" type="date" id="rep-to" data-ch="to" value="${UI.to}" max="${iso(Date.now())}"></div></div>
+    <div class="mini-chips">${[['This month','month'],['Last month','lmonth'],['This year','year']].map(([l,v])=>`<button data-a="rangeQuick" data-v="${v}">${l}</button>`).join('')}</div></div>`:''}
+  <div class="range-note">${ic('calendar')}${label} · ${nDays} day${nDays>1?'s':''}</div>
+  <div class="tiles">
+    <div class="tile hero"><div><div class="l">Total sales · ${paid.length} jobs</div><div class="v">${peso(T.s)}</div></div><span class="ic">${ic('banknote')}</span></div>
+    <div class="tile"><span class="ic s-repair">${ic('package')}</span><span class="v">${peso0(T.p)}</span><span class="l">Parts sold</span></div>
+    <div class="tile"><span class="ic s-ready">${ic('wrench')}</span><span class="v">${peso0(T.l)}</span><span class="l">Labor</span></div>
+    <div class="tile"><span class="ic s-paid">${ic('trending-up')}</span><span class="v">${peso0(profit)}</span><span class="l">Parts profit</span></div>
+    <div class="tile"><span class="ic s-low">${ic('percent')}</span><span class="v">${peso0(T.d)}</span><span class="l">Discounts given</span></div>
+  </div>
+  <div class="card"><div class="sec-h" style="margin:0"><h2>Daily sales</h2></div>
+    <div class="chart-wrap" id="chartWrap"><div class="chart" style="grid-template-columns:repeat(${cn},minmax(${cn>7?'34px':'0'},1fr))">${days.map(d=>`<div class="c ${d.today?'today':''} ${d.out?'out':''}"><span class="val">${d.v?'₱'+k(d.v):''}</span><span class="b" style="height:${Math.max(3,d.v/max*100)}px"></span><span class="d">${d.today?'Today':cn>7?(new Date(d.t).getDate()===1||d.t===cstart?dshort(d.t):new Date(d.t).getDate()):new Date(d.t).toLocaleDateString('en-PH',{weekday:'short'})}</span></div>`).join('')}</div></div></div>
+  <div class="card" style="display:flex;flex-direction:column;gap:12px"><div class="sec-h" style="margin:0"><h2>Payments</h2></div>
+    ${Object.keys(PAY).map(m=>`<div class="hbar"><div class="top-l"><span style="display:flex;gap:6px;align-items:center">${ic(PAY[m].icon)}${PAY[m].label}</span><b>${peso0(pm[m]||0)}</b></div><div class="tr"><i style="width:${T.s?(pm[m]||0)/T.s*100:0}%"></i></div></div>`).join('')}</div>
+  <div class="card" style="padding-block:10px 4px"><div class="sec-h" style="margin:0 0 4px"><h2>Top parts</h2></div>
+    ${top.length?top.map(p=>`<div class="row"><span class="ci">${ic(CATS[p.cat].icon)}</span><div class="mid"><div class="t">${esc(p.name)}</div><div class="s">${p.q} pcs sold</div></div><span class="amt">${peso0(p.v)}</span></div>`).join(''):`<div class="empty">No sales in this period.</div>`}</div>`;
+}
+
+function settingsView(){
+  const s=S.shop;
+  return `<div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div class="field"><label for="s-name">${ic('store')}Shop name</label><input class="inp" id="s-name" value="${esc(s.name)}"></div>
+    <div class="field"><label for="s-owner">${ic('user')}Owner name</label><input class="inp" id="s-owner" value="${esc(s.owner)}"></div>
+    <div class="field"><label for="s-addr">${ic('map-pin')}Address</label><input class="inp" id="s-addr" value="${esc(s.address)}"></div>
+    <div class="field"><label for="s-foot">${ic('receipt')}Receipt footer</label><input class="inp" id="s-foot" value="${esc(s.footer)}"></div>
+  </div><button class="btn" data-a="saveSettings">${ic('check')}Save settings</button>`;
+}
+
+/* ===== Sheets ===== */
+let SH=null;
+function openSheet(fn,...args){SH={fn,args};paintSheet();$('#scrim').classList.add('open');$('#sheet').classList.add('open')}
+function paintSheet(){if(!SH)return;const {title,body}=SH.fn(...SH.args);
+  $('#sheet').innerHTML=`<div class="grab"></div><div class="sh"><h3>${title}</h3><button class="icon-btn" data-a="closeSheet" aria-label="Close">${ic('x')}</button></div><div class="sb" id="sb">${body}</div>`;icons()}
+function closeSheet(){SH=null;$('#scrim').classList.remove('open');$('#sheet').classList.remove('open')}
+
+function shNewJob(){
+  const d=shNewJob.d;
+  return{title:'New job order',body:`
+  <p class="form-note">Only the customer name and motorcycle <span class="req">*</span> are required. Fill in the rest later if needed.</p>
+  <div class="field"><label for="nj-name">${ic('user')}Customer name <span class="req">*</span></label><input class="inp ${shNewJob.err&&!d.name?'err':''}" id="nj-name" placeholder="e.g. Juan Dela Cruz" value="${esc(d.name)}" data-in="nj:name"></div>
+  <div class="field"><label for="nj-phone">${ic('phone')}Mobile number<span class="opt">Optional</span></label><input class="inp" id="nj-phone" inputmode="tel" placeholder="09xx xxx xxxx" value="${esc(d.phone)}" data-in="nj:phone"></div>
+  <div class="grid2"><div class="field"><label for="nj-plate">${ic('rectangle-horizontal')}Plate no.<span class="opt">Optional</span></label><input class="inp" id="nj-plate" style="font-family:var(--f-mono);text-transform:uppercase" placeholder="ABC 1234" value="${esc(d.plate)}" data-in="nj:plate"></div>
+  <div class="field"><label for="nj-color">${ic('palette')}Color<span class="opt">Optional</span></label><input class="inp" id="nj-color" placeholder="Red" value="${esc(d.color)}" data-in="nj:color"></div></div>
+  <div class="field"><label for="nj-model">${MOTO.replace('class="moto"','style="width:15px;height:15px"')}Motorcycle <span class="req">*</span></label><input class="inp ${shNewJob.err&&!d.model?'err':''}" id="nj-model" placeholder="Brand and model" value="${esc(d.model)}" data-in="nj:model">
+    <div class="mini-chips">${MODELS.map(m=>`<button class="${d.model===m?'on':''}" data-a="njModel" data-v="${esc(m)}">${esc(m)}</button>`).join('')}</div></div>
+  <div class="field"><label for="nj-prob">${ic('message-square-text')}Problem / request<span class="opt">Optional</span></label><textarea class="inp" id="nj-prob" placeholder="Ano ang sira?" data-in="nj:problem">${esc(d.problem)}</textarea>
+    <div class="mini-chips">${PROBLEMS.map(p=>`<button data-a="njProb" data-v="${esc(p)}">${esc(p)}</button>`).join('')}</div></div>
+  <div class="field"><label>${ic('hard-hat')}Assign mechanic<span class="opt">Optional</span></label><div class="pick">${S.mechanics.map(m=>`<button class="${d.mech===m.id?'on':''}" data-a="njMech" data-v="${m.id}"><span class="avatar sm">${initials(m.name)}</span>${esc(m.short)}<span style="font-size:11.5px;color:var(--muted)">${S.jobs.filter(j=>j.mechanicId===m.id&&j.status!=='paid').length} active</span></button>`).join('')}</div></div>
+  <button class="btn" data-a="createJob">${ic('clipboard-check')}Create job order</button>`}
+}
+shNewJob.d={};
+
+function shPick(jid){
+  const j=job(jid); const q=UI.pickQ.trim().toLowerCase();
+  const inJob=id=>j.items.filter(x=>x.partId===id).reduce((a,x)=>a+x.qty,0);
+  const list=S.parts.filter(p=>UI.pickCat==='all'||p.cat===UI.pickCat).filter(p=>!q||[p.name,p.brand,p.sku].join(' ').toLowerCase().includes(q));
+  return{title:`Take parts · ${esc(j.moto.plate||j.moto.model)}`,body:`
+  <div class="search">${ic('scan-barcode')}<input id="pickQ" data-in="pickQ" placeholder="Search or scan part" value="${esc(UI.pickQ)}"></div>
+  <div class="chips"><button class="chip ${UI.pickCat==='all'?'on':''}" data-a="pickCat" data-v="all">${ic('layers')}All</button>${Object.entries(CATS).map(([k,c])=>`<button class="chip ${UI.pickCat===k?'on':''}" data-a="pickCat" data-v="${k}">${ic(c.icon)}${c.label}</button>`).join('')}</div>
+  <div class="card" style="padding-block:4px" id="pickList">${list.map(p=>{const n=inJob(p.id);const out=p.stock<=0;return `
+    <button class="row" data-a="take" data-v="${p.id}" ${out?'disabled style="opacity:.5"':''}><span class="ci" style="${n?'background:var(--accent-soft);color:var(--accent)':''}">${ic(CATS[p.cat].icon)}</span>
+    <span class="mid"><span class="t" style="display:block">${esc(p.name)}</span><span class="s" style="display:block"><span class="stock ${p.stock<=p.min?'low':''}">${out?'Out of stock':p.stock+' on shelf'}</span> · ${peso0(p.price)}</span></span>
+    <span class="end" style="flex-direction:row;align-items:center;gap:8px">${n?`<span class="badge">${n}</span>`:''}<span class="icon-btn" style="width:34px;height:34px;border-radius:11px;background:var(--accent);color:var(--accent-ink);box-shadow:none">${ic('plus')}</span></span></button>`}).join('')||`<div class="empty">No parts found.</div>`}</div>
+  <button class="btn dark" data-a="closeSheet">${ic('check')}Done · ${totals(j).count} parts on this job</button>`}
+}
+function shLabor(jid){
+  return{title:'Add labor',body:`<div class="pick">${LABOR.map(([d,a])=>`<button data-a="addLabor" data-v="${esc(d)}|${a}">${ic('wrench')}${esc(d)}<b style="font-variant-numeric:tabular-nums">${peso0(a)}</b></button>`).join('')}</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:10px"><div style="font-weight:700">Custom labor</div>
+  <input class="inp" id="lab-d" placeholder="Description (e.g. Engine overhaul)"><input class="inp" id="lab-a" inputmode="decimal" placeholder="Amount ₱">
+  <button class="btn" data-a="addLaborCustom">${ic('plus')}Add</button></div>`}
+}
+function shDisc(jid){const j=job(jid);const t=totals(j);
+  return{title:'Discount',body:`<div class="field"><label for="disc">${ic('percent')}Discount amount (₱)</label><input class="inp" id="disc" inputmode="decimal" value="${j.discount||''}" placeholder="0"></div>
+  <div class="mini-chips">${[0,20,50,100].map(v=>`<button data-a="discQuick" data-v="${v}">${v?peso0(v):'None'}</button>`).join('')}<button data-a="discQuick" data-v="${Math.round(t.sub*0.05)}">5% (${peso0(t.sub*0.05)})</button><button data-a="discQuick" data-v="${t.sub%10}">Round off (${peso0(t.sub%10)})</button></div>
+  <button class="btn" data-a="saveDisc">${ic('check')}Apply</button>`}
+}
+function shAssign(jid){const j=job(jid);
+  return{title:'Assign mechanic',body:`<div class="pick">${S.mechanics.map(m=>`<button class="${j.mechanicId===m.id?'on':''}" data-a="assign" data-v="${m.id}"><span class="avatar sm">${initials(m.name)}</span>${esc(m.short)}</button>`).join('')}</div>`}}
+function shBill(jid){const j=job(jid);const t=totals(j);const b=shBill.b;
+  const tendered=parseFloat(b.cash)||0; const change=tendered-t.total;
+  const quick=[t.total,Math.ceil(t.total/100)*100,Math.ceil(t.total/500)*500,Math.ceil(t.total/1000)*1000].filter((v,i,a)=>a.indexOf(v)===i);
+  return{title:`Bill out · ${esc(j.id)}`,body:`
+  <div class="card sum"><div class="l"><span>${ic('package')}Parts (${t.count})</span><span>${peso(t.parts)}</span></div><div class="l"><span>${ic('wrench')}Labor</span><span>${peso(t.labor)}</span></div>
+  ${t.discount?`<div class="l"><span>${ic('percent')}Discount</span><span>−${peso(t.discount)}</span></div>`:''}<div class="l tot"><span>Amount due</span><span class="big">${peso(t.total)}</span></div></div>
+  <div class="field"><label>${ic('wallet')}Payment method</label><div class="pick" style="grid-template-columns:repeat(4,1fr)">${Object.entries(PAY).map(([k,p])=>`<button class="${b.method===k?'on':''}" data-a="payMethod" data-v="${k}">${ic(p.icon)}${p.label}</button>`).join('')}</div></div>
+  ${b.method==='cash'?`<div class="field"><label for="cash">${ic('banknote')}Cash received</label><input class="inp" id="cash" inputmode="decimal" value="${esc(b.cash)}" placeholder="0.00" data-in="cash">
+    <div class="mini-chips">${quick.map(v=>`<button data-a="cashQuick" data-v="${v}">${peso0(v)}</button>`).join('')}</div></div>
+    <div class="change ${change<0?'neg':''}" id="chg"><span>${change<0?'Kulang':'Sukli (change)'}</span><span class="v">${tendered?peso(Math.abs(change)):'—'}</span></div>`:
+    `<div class="field"><label for="ref">${ic('hash')}Reference no.</label><input class="inp" id="ref" placeholder="Optional" value="${esc(b.ref)}" data-in="ref"></div>`}
+  <button class="btn" data-a="confirmPay" data-v="${j.id}">${ic('badge-check')}Confirm payment</button>`}
+}
+shBill.b={method:'cash',cash:'',ref:''};
+function receiptText(j){const t=totals(j);const L=[S.shop.name,S.shop.address,'',`${j.id}  ${when(j.payment.paidAt)}`,[j.customer.name,j.moto.model,j.moto.plate].filter(Boolean).join(' · '),'---'];
+  j.items.forEach(x=>L.push(`${x.qty} x ${x.name}  ${peso(x.price*x.qty)}`));j.labor.forEach(x=>L.push(`Labor: ${x.desc}  ${peso(x.amount)}`));
+  if(t.discount)L.push(`Discount  -${peso(t.discount)}`);L.push('---',`TOTAL  ${peso(t.total)}`,`Paid via ${PAY[j.payment.method].label}`,'',S.shop.footer);return L.join('\n')}
+function shReceipt(jid){const j=job(jid);const t=totals(j);const m=mech(j.mechanicId);
+  return{title:'Receipt',body:`<div class="receipt">
+    <div class="c"><div class="shop">${esc(S.shop.name)}</div><div>${esc(S.shop.address)}</div></div><hr>
+    <div class="ln"><span>${esc(j.id)}</span><span>${when(j.payment.paidAt)}</span></div>
+    <div>${esc(j.customer.name)}</div><div>${esc([j.moto.model,j.moto.plate].filter(Boolean).join(' · '))}</div><div>Mechanic: ${esc(m?m.name:'—')}</div><hr>
+    ${j.items.map(x=>`<div class="ln"><span>${x.qty} × ${esc(x.name)}</span><span>${peso(x.price*x.qty)}</span></div>`).join('')}
+    ${j.labor.map(x=>`<div class="ln"><span>Labor · ${esc(x.desc)}</span><span>${peso(x.amount)}</span></div>`).join('')}<hr>
+    <div class="ln"><span>Subtotal</span><span>${peso(t.sub)}</span></div>${t.discount?`<div class="ln"><span>Discount</span><span>−${peso(t.discount)}</span></div>`:''}
+    <div class="ln gt"><span>TOTAL</span><span>${peso(t.total)}</span></div>
+    <div class="ln"><span>Paid · ${PAY[j.payment.method].label}</span><span>${j.payment.cash?peso(j.payment.cash):''}</span></div>
+    ${j.payment.cash?`<div class="ln"><span>Change</span><span>${peso(j.payment.cash-t.total)}</span></div>`:''}${j.payment.ref?`<div class="ln"><span>Ref</span><span>${esc(j.payment.ref)}</span></div>`:''}
+    <hr><div class="c">${esc(S.shop.footer)}</div></div>
+    <button class="btn dark" data-a="copyReceipt" data-v="${j.id}">${ic('copy')}Copy receipt text</button>`}}
+function shPart(pid){const p=pid?part(pid):null;const owner=isOwner();const d=p||{name:'',brand:'',cat:'oil',price:'',cost:'',stock:0,min:3};
+  if(!owner&&p) return{title:esc(p.name),body:`<div class="card kv"><span class="k">${ic('tag')}Brand</span><span class="v">${esc(p.brand)}</span><span class="k">${ic(CATS[p.cat].icon)}Category</span><span class="v">${CATS[p.cat].label}</span>
+    <span class="k">${ic('banknote')}Price</span><span class="v">${peso(p.price)}</span><span class="k">${ic('package')}On shelf</span><span class="v">${p.stock} pcs</span><span class="k">${ic('barcode')}SKU</span><span class="v jo">${p.sku}</span></div>
+    <div class="role-banner">${ic('info')}To take this part, open the job and tap “Take part”.</div>`};
+  return{title:p?'Edit part':'Add part',body:`
+  <div class="field"><label for="pf-name">${ic('package')}Part name</label><input class="inp" id="pf-name" value="${esc(d.name)}" placeholder="e.g. Spark plug CPR8EA-9"></div>
+  <div class="grid2"><div class="field"><label for="pf-brand">${ic('tag')}Brand</label><input class="inp" id="pf-brand" value="${esc(d.brand)}"></div>
+  <div class="field"><label for="pf-cat">${ic('layers')}Category</label><select class="inp" id="pf-cat">${Object.entries(CATS).map(([k,c])=>`<option value="${k}" ${d.cat===k?'selected':''}>${c.label}</option>`).join('')}</select></div></div>
+  <div class="grid2"><div class="field"><label for="pf-price">${ic('banknote')}Selling price</label><input class="inp" id="pf-price" inputmode="decimal" value="${d.price}"></div>
+  <div class="field"><label for="pf-cost">${ic('receipt')}Cost</label><input class="inp" id="pf-cost" inputmode="decimal" value="${d.cost}"></div></div>
+  <div class="grid2"><div class="field"><label for="pf-stock">${ic('boxes')}In stock</label><input class="inp" id="pf-stock" inputmode="numeric" value="${d.stock}"></div>
+  <div class="field"><label for="pf-min">${ic('triangle-alert')}Alert when ≤</label><input class="inp" id="pf-min" inputmode="numeric" value="${d.min}"></div></div>
+  <div class="field"><label>${ic('truck')}Quick restock</label><div class="mini-chips">${[1,5,10,20].map(n=>`<button data-a="restock" data-v="${n}">+${n}</button>`).join('')}</div></div>
+  <button class="btn" data-a="savePart" data-v="${p?p.id:''}">${ic('check')}${p?'Save part':'Add to inventory'}</button>
+  ${p?`<button class="btn ghost" data-a="delPart" data-v="${p.id}" style="color:var(--danger)">${ic('trash-2')}Remove part</button>`:''}`}}
+function shLow(){const l=lowParts();
+  return{title:'Low stock alerts',body:l.length?`<div class="card" style="padding-block:4px">${l.map(p=>`<button class="row" data-a="partSheet" data-v="${p.id}"><span class="ci" style="color:var(--danger);background:var(--danger-bg)">${ic(CATS[p.cat].icon)}</span><span class="mid"><span class="t" style="display:block">${esc(p.name)}</span><span class="s" style="display:block">${esc(p.brand)}</span></span><span class="end"><span class="pill s-low">${p.stock} left</span><span class="stock">min ${p.min}</span></span></button>`).join('')}</div>
+  <p style="margin:0;color:var(--muted);font-size:13px">Tap a part to restock it.</p>`:`<div class="empty">${ic('badge-check')}All parts are well stocked.</div>`}}
+function shRole(){return{title:'Who is using the app?',body:`<div class="pick">
+  <button class="${isOwner()?'on':''}" data-a="setRole" data-v="owner"><span class="avatar sm">${initials('Boss '+S.shop.owner)}</span>Owner<span style="font-size:11.5px;color:var(--muted)">Full access</span></button>
+  ${S.mechanics.map(m=>`<button class="${S.role===m.id?'on':''}" data-a="setRole" data-v="${m.id}"><span class="avatar sm" style="background:var(--repair);color:#fff">${initials(m.name)}</span>${esc(m.short)}<span style="font-size:11.5px;color:var(--muted)">Mechanic</span></button>`).join('')}</div>
+  <p style="margin:0;color:var(--muted);font-size:13px">In the real app each person logs in with a PIN. Mechanics only see their own jobs, can take parts and add labor, but cannot bill out or see costs.</p>`}}
+function shCust(key){const js=S.jobs.filter(j=>ckey(j)===key).sort((a,b)=>b.created-a.created);const c=js[0];
+  return{title:esc(c.customer.name),body:`<div class="card" style="display:flex;align-items:center;gap:12px">${plateTag(c.moto.plate,1)}<div><div style="font-weight:700">${esc(c.moto.model)}</div><div style="font-size:13px;color:var(--muted)">${esc(c.customer.phone)}</div></div></div>
+  <div class="list">${js.map(j=>`<button class="card job" data-a="openJob" data-v="${j.id}" data-back="customers"><span class="mi s-${j.status}">${ic('file-text')}</span><span class="mid"><span class="t">${esc(j.problem||j.id)}</span><span class="s"><span class="jo">${j.id}</span> · ${when(j.created)}</span></span><span class="r"><span class="amt">${peso0(totals(j).total)}</span>${pill(j.status)}</span></button>`).join('')}</div>`}}
+function shMech(){return{title:'Add mechanic',body:`<div class="field"><label for="mf-name">${ic('user')}Full name</label><input class="inp" id="mf-name"></div>
+  <div class="field"><label for="mf-phone">${ic('phone')}Mobile</label><input class="inp" id="mf-phone" inputmode="tel"></div>
+  <div class="field"><label for="mf-com">${ic('percent')}Commission on labor (%)</label><input class="inp" id="mf-com" inputmode="numeric" value="40"></div>
+  <button class="btn" data-a="saveMech">${ic('user-plus')}Add mechanic</button>`}}
+function shPickJob(mode){const js=visibleJobs().filter(j=>mode==='bill'?j.status==='ready':j.status==='queue'||j.status==='repair');
+  return{title:mode==='bill'?'Which job to bill out?':'Take parts for which motor?',body:js.length?`<div class="list">${js.map(j=>jobCard(j).replace('data-a="openJob"',`data-a="${mode==='bill'?'pickBill':'pickTake'}"`)).join('')}</div>`:`<div class="empty">${MOTO}${mode==='bill'?'No jobs are ready for bill-out yet.':'No motors being repaired right now.'}</div>`}}
+function shReset(){return{title:'Reset demo data?',body:`<p style="margin:0">This clears every job, part and change you made and loads the sample shop again.</p>
+  <div class="confirm"><button class="btn ghost" data-a="closeSheet">Cancel</button><button class="btn" style="background:var(--danger);color:#fff" data-a="reset">${ic('rotate-ccw')}Reset</button></div>`}}
+
+/* ===== Actions ===== */
+const val=id=>($('#'+id)?.value??'').trim();
+function takePart(jid,pid,delta){
+  const j=job(jid),p=part(pid);
+  if(delta>0&&p.stock<delta){toast(`Only ${p.stock} left on shelf`,'triangle-alert');return false}
+  let it=j.items.find(x=>x.partId===pid&&x.by===myId());
+  if(!it){it={partId:pid,name:p.name,cat:p.cat,price:p.price,qty:0,by:myId(),at:Date.now()};j.items.push(it)}
+  it.qty+=delta;it.at=Date.now();p.stock-=delta;
+  if(j.status==='queue')j.status='repair';
+  return true;
+}
+const A={
+  go:v=>{closeSheet();go(v)},
+  openJob:(v,el)=>{closeSheet();go('job',v,el.dataset.back||(R.name==='job'?'jobs':R.name))},
+  jobFilter:v=>{UI.jobFilter=v;go('jobs')},
+  partFilter:v=>{UI.partCat=v;go('parts')},
+  period:v=>{UI.period=v==='custom'?'custom':+v;render();const w=$('#chartWrap');if(w)w.scrollLeft=w.scrollWidth},
+  rangeQuick:v=>{const n=new Date();let a,b;
+    if(v==='month'){a=new Date(n.getFullYear(),n.getMonth(),1);b=n}
+    else if(v==='lmonth'){a=new Date(n.getFullYear(),n.getMonth()-1,1);b=new Date(n.getFullYear(),n.getMonth(),0)}
+    else{a=new Date(n.getFullYear(),0,1);b=n}
+    UI.from=iso(a);UI.to=iso(b);render();const w=$('#chartWrap');if(w)w.scrollLeft=w.scrollWidth},
+  newJob:()=>{shNewJob.err=false;shNewJob.d={name:'',phone:'',plate:'',color:'',model:'',problem:'',mech:isOwner()?'':S.role};openSheet(shNewJob)},
+  njModel:v=>{shNewJob.d.model=v;paintSheet()},
+  njProb:v=>{const d=shNewJob.d;d.problem=d.problem?d.problem.replace(/\s*$/,'')+(d.problem.match(/[.,]$/)?' ':', ')+v:v;paintSheet()},
+  njMech:v=>{shNewJob.d.mech=v;paintSheet()},
+  createJob:()=>{const d=shNewJob.d;
+    d.name=d.name.trim();d.model=d.model.trim();
+    if(!d.name||!d.model){shNewJob.err=true;paintSheet();toast('Add the customer name and motorcycle','triangle-alert');return}
+    shNewJob.err=false;
+    const id='JO-'+(S.nextNo++);
+    S.jobs.unshift({id,status:'queue',created:Date.now(),customer:{name:d.name,phone:d.phone},moto:{model:d.model,plate:d.plate.trim().toUpperCase(),color:d.color.trim()},problem:d.problem,mechanicId:d.mech||S.mechanics[0].id,items:[],labor:[],discount:0});
+    closeSheet();go('job',id,'home');toast(id+' created')},
+  takeAny:()=>openSheet(shPickJob,'take'),
+  billAny:()=>openSheet(shPickJob,'bill'),
+  pickTake:v=>{go('job',v,'home');UI.pickQ='';UI.pickCat='all';openSheet(shPick,v)},
+  pickBill:v=>{go('job',v,'home');shBill.b={method:'cash',cash:'',ref:''};openSheet(shBill,v)},
+  pickSheet:v=>{UI.pickQ='';UI.pickCat='all';openSheet(shPick,v)},
+  pickCat:v=>{UI.pickCat=v;paintSheet()},
+  take:v=>{const jid=SH.args[0];if(takePart(jid,v,1)){toast('Added '+part(v).name.split(' · ')[0]);paintSheet();render()}},
+  qty:v=>{const [i,dl]=v.split(':').map(Number);const j=job(R.id);const it=j.items[i];const p=part(it.partId);
+    if(dl>0){if(!p||p.stock<1){toast('No more on the shelf','triangle-alert');return}p.stock--;it.qty++}
+    else{if(p)p.stock++;it.qty--;if(it.qty<=0){j.items.splice(i,1);toast('Part returned to shelf','undo-2')}}
+    render()},
+  laborSheet:v=>openSheet(shLabor,v),
+  addLabor:v=>{const [d,a]=v.split('|');job(SH.args[0]).labor.push({desc:d,amount:+a});closeSheet();render();toast('Labor added')},
+  addLaborCustom:()=>{const d=val('lab-d'),a=parseFloat(val('lab-a'));if(!d||!(a>0)){toast('Enter a description and amount','triangle-alert');return}
+    job(SH.args[0]).labor.push({desc:d,amount:a});closeSheet();render();toast('Labor added')},
+  delLabor:v=>{job(R.id).labor.splice(+v,1);render()},
+  discSheet:v=>openSheet(shDisc,v),
+  discQuick:v=>{$('#disc').value=v},
+  saveDisc:()=>{job(SH.args[0]).discount=Math.max(0,parseFloat(val('disc'))||0);closeSheet();render();toast('Discount applied')},
+  assignSheet:v=>openSheet(shAssign,v),
+  assign:v=>{job(SH.args[0]).mechanicId=v;closeSheet();render();toast('Assigned to '+mech(v).short)},
+  setStatus:v=>{const j=job(R.id);j.status=v;render();toast(v==='repair'?'Repair started':v==='ready'?'Sent to owner for bill-out':'Updated')},
+  billSheet:v=>{shBill.b={method:'cash',cash:'',ref:''};openSheet(shBill,v)},
+  payMethod:v=>{shBill.b.method=v;paintSheet()},
+  cashQuick:v=>{shBill.b.cash=String(v);paintSheet()},
+  confirmPay:v=>{const j=job(v);const t=totals(j);const b=shBill.b;
+    if(b.method==='cash'&&(parseFloat(b.cash)||0)<t.total){toast('Cash received is less than the total','triangle-alert');return}
+    j.status='paid';j.payment={method:b.method,paidAt:Date.now(),cash:b.method==='cash'?parseFloat(b.cash):null,ref:b.ref||null};
+    render();openSheet(shReceipt,v);toast('Paid · '+peso(t.total),'badge-check')},
+  receipt:v=>openSheet(shReceipt,v),
+  copyReceipt:v=>copyText(receiptText(job(v)),'Receipt copied'),
+  copy:v=>copyText(v,'Number copied'),
+  partSheet:v=>openSheet(shPart,v||null),
+  restock:v=>{const e=$('#pf-stock');e.value=(parseInt(e.value)||0)+(+v)},
+  savePart:v=>{const name=val('pf-name');const price=parseFloat(val('pf-price'));if(!name||!(price>0)){toast('Add a name and price','triangle-alert');return}
+    const data={name,brand:val('pf-brand')||'Generic',cat:val('pf-cat'),price,cost:parseFloat(val('pf-cost'))||0,stock:parseInt(val('pf-stock'))||0,min:parseInt(val('pf-min'))||0};
+    if(v)Object.assign(part(v),data);else{const id='p'+(Date.now()%1e6);S.parts.push({id,sku:'SKU-'+String(S.parts.length+1).padStart(4,'0'),...data})}
+    closeSheet();render();toast(v?'Part saved':'Part added')},
+  delPart:v=>{S.parts=S.parts.filter(p=>p.id!==v);closeSheet();render();toast('Part removed','trash-2')},
+  lowSheet:()=>openSheet(shLow),
+  roleSheet:()=>openSheet(shRole),
+  setRole:v=>{S.role=v;closeSheet();go('home');toast(v==='owner'?'Owner view':'Mechanic view: '+mech(v).short,'user')},
+  custSheet:v=>openSheet(shCust,v),
+  mechSheet:()=>openSheet(shMech),
+  saveMech:()=>{const n=val('mf-name');if(!n){toast('Enter a name','triangle-alert');return}
+    S.mechanics.push({id:'m'+Date.now(),name:n,short:n.split(' ')[0],phone:val('mf-phone'),commission:parseFloat(val('mf-com'))||0});closeSheet();render();toast('Mechanic added')},
+  saveSettings:()=>{Object.assign(S.shop,{name:val('s-name')||S.shop.name,owner:val('s-owner')||S.shop.owner,address:val('s-addr'),footer:val('s-foot')});render();toast('Settings saved')},
+  toggleTheme:()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem(KEY+'.theme',r.dataset.theme)}catch(e){}},
+  resetAsk:()=>openSheet(shReset),
+  reset:()=>{S=seed();closeSheet();go('home');toast('Demo data restored')},
+  closeSheet:()=>closeSheet(),
+};
+function copyText(t,msg){try{navigator.clipboard.writeText(t).then(()=>toast(msg,'copy'),()=>toast('Copy not allowed here','triangle-alert'))}catch(e){toast('Copy not allowed here','triangle-alert')}}
+
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(!el||el.disabled)return;e.preventDefault();const f=A[el.dataset.a];if(f)f(el.dataset.v,el,e)});
+document.addEventListener('input',e=>{const k=e.target.dataset.in;if(!k)return;const v=e.target.value;
+  if(k==='jobQ'){UI.jobQ=v;$('#jobList').innerHTML=jobListHtml();icons()}
+  else if(k==='partQ'){UI.partQ=v;$('#partList').innerHTML=partListHtml();icons()}
+  else if(k==='pickQ'){UI.pickQ=v;const pos=e.target.selectionStart;paintSheet();const i=$('#pickQ');i.focus();i.setSelectionRange(pos,pos)}
+  else if(k.startsWith('nj:'))shNewJob.d[k.slice(3)]=v;
+  else if(k==='ref')shBill.b.ref=v;
+  else if(k==='cash'){shBill.b.cash=v;const j=job(SH.args[0]);const ch=(parseFloat(v)||0)-totals(j).total;const c=$('#chg');
+    c.className='change'+(ch<0?' neg':'');c.innerHTML=`<span>${ch<0?'Kulang':'Sukli (change)'}</span><span class="v">${v?peso(Math.abs(ch)):'—'}</span>`}
+});
+document.addEventListener('change',e=>{const k=e.target.dataset.ch;if(!k||!e.target.value)return;UI[k]=e.target.value;render();const w=$('#chartWrap');if(w)w.scrollLeft=w.scrollWidth});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&SH)closeSheet()});
+
+try{const th=localStorage.getItem(KEY+'.theme');if(th)document.documentElement.dataset.theme=th}catch(e){}
+render();
+if('serviceWorker' in navigator && location.protocol!=='file:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+</script>
+</body>
+</html>

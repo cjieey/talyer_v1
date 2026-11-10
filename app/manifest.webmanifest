@@ -1,0 +1,14 @@
+{
+  "name": "Talyer Tally",
+  "short_name": "Talyer Tally",
+  "description": "Job orders, parts tally and bill-out for Philippine motorshops",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ECEFF2",
+  "theme_color": "#131B23",
+  "icons": [
+    {"src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable"}
+  ]
+}

@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Talyer Tally logs every motorcycle, tallies each part your mechanics take, and gives the customer one clear total with sukli. Try the free demo.">
+<meta name="theme-color" content="#E2552B">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="app/icon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Talyer Tally · Every part taken. Every peso counted.">
+<meta property="og:description" content="Job orders, parts tally and bill-out for Philippine motorshops. Try the free demo.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<title>Talyer Tally</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: sticky header, light hero with a live phone, dark scroll-story band with a sticky phone, interactive tally bench, bento features, FAQ. 16px gutters, 1180px max. */
+:root{
+  --bg:#EDEFF1; --bg-2:#E2E6EA; --surface:#FFFFFF; --ink:#121A22; --muted:#56636F; --line:#D5DBE0;
+  --accent:#E2552B; --accent-ink:#FFFFFF; --accent-soft:#FBE1D7; --accent-deep:#B8401C;
+  --band:#121A22; --band-2:#1B2630; --band-ink:#EEF2F5; --band-muted:#9AABB9; --band-line:#2B3946;
+  --ok:#1B7647; --ok-bg:#D8F1E3; --blue:#1E5DAA; --blue-bg:#DCE8F8; --warn:#8A6400; --warn-bg:#FFF1C2;
+  --purple:#6A3DBE; --purple-bg:#EAE2FA; --danger:#C2332B; --danger-bg:#FBE0DE;
+  --paper:#FFFDF7; --paper-ink:#1A1A1A; --paper-line:#A9A49A;
+  --scr-bg:#ECEFF2; --scr-surface:#FFFFFF; --scr-ink:#131B23; --scr-muted:#5B6976; --scr-line:#D8DEE4;
+  --plate:#FFFFFF; --plate-ink:#0E1419; --frame:#0B1015;
+  --shadow-sm:0 1px 2px rgba(18,26,34,.06),0 4px 14px rgba(18,26,34,.06);
+  --shadow-lg:0 30px 60px -20px rgba(18,26,34,.35),0 12px 24px -12px rgba(18,26,34,.25);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --gutter-l:max(16px,env(safe-area-inset-left,0px)); --gutter-r:max(16px,env(safe-area-inset-right,0px));
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1318; --bg-2:#121B22; --surface:#161F28; --ink:#E7EDF2; --muted:#94A4B2; --line:#26333F;
+  --accent:#FF6B3D; --accent-ink:#1A0D07; --accent-soft:#3A2118; --accent-deep:#FF8C66;
+  --band:#080C10; --band-2:#131C24; --band-ink:#E7EDF2; --band-muted:#8A9CAB; --band-line:#22303B;
+  --ok:#6BD69C; --ok-bg:#163828; --blue:#7DB2F5; --blue-bg:#16304F; --warn:#F2C94C; --warn-bg:#3A3112;
+  --purple:#B79BF5; --purple-bg:#2D2148; --danger:#FF8A80; --danger-bg:#3D1C1A;
+  --scr-bg:#0E141A; --scr-surface:#17202A; --scr-ink:#E7EDF2; --scr-muted:#93A3B1; --scr-line:#2A3743;
+  --plate:#E9EEF2; --frame:#000000;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.25);
+  --shadow-lg:0 30px 60px -20px rgba(0,0,0,.7),0 12px 24px -12px rgba(0,0,0,.5);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1318; --bg-2:#121B22; --surface:#161F28; --ink:#E7EDF2; --muted:#94A4B2; --line:#26333F;
+  --accent:#FF6B3D; --accent-ink:#1A0D07; --accent-soft:#3A2118; --accent-deep:#FF8C66;
+  --band:#080C10; --band-2:#131C24; --band-ink:#E7EDF2; --band-muted:#8A9CAB; --band-line:#22303B;
+  --ok:#6BD69C; --ok-bg:#163828; --blue:#7DB2F5; --blue-bg:#16304F; --warn:#F2C94C; --warn-bg:#3A3112;
+  --purple:#B79BF5; --purple-bg:#2D2148; --danger:#FF8A80; --danger-bg:#3D1C1A;
+  --scr-bg:#0E141A; --scr-surface:#17202A; --scr-ink:#E7EDF2; --scr-muted:#93A3B1; --scr-line:#2A3743;
+  --plate:#E9EEF2; --frame:#000000;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.25);
+  --shadow-lg:0 30px 60px -20px rgba(0,0,0,.7),0 12px 24px -12px rgba(0,0,0,.5);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--bg)}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:8px}
+.ic{width:1em;height:1em;flex:none;stroke-width:2}
+.wrap{max-width:1180px;margin:0 auto;padding-left:var(--gutter-l);padding-right:var(--gutter-r)}
+h1,h2,h3{font-family:var(--f-display);font-weight:800;line-height:.98;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h2{font-size:clamp(36px,5.4vw,64px);text-transform:uppercase}
+h3{font-size:22px;font-weight:700;line-height:1.1}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-deep);display:inline-flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:22px;height:2px;background:currentColor}
+.lede{font-size:clamp(17px,1.6vw,20px);color:var(--muted);max-width:60ch}
+.sec{padding-block:clamp(72px,10vw,128px)}
+.sec-head{display:flex;flex-direction:column;gap:16px;margin-bottom:clamp(32px,5vw,56px);max-width:780px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 22px;border-radius:16px;font-weight:700;font-size:16.5px;text-decoration:none;background:var(--accent);color:var(--accent-ink);transition:transform .15s,box-shadow .2s;box-shadow:0 10px 24px -10px rgba(226,85,43,.7);white-space:nowrap}
+.btn:hover{transform:translateY(-2px)}
+.btn:active{transform:translateY(0)}
+.btn .ic{width:20px;height:20px}
+.btn.ghost{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+.btn.sm{padding:10px 15px;font-size:14.5px;border-radius:13px}
+.btn.sm .ic{width:17px;height:17px}
+
+/* header */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;transition:background .25s,box-shadow .25s}
+.hdr.scrolled{background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+.hdr .wrap{display:flex;align-items:center;gap:18px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:.01em}
+.mark{width:36px;height:36px;border-radius:11px;background:var(--accent);display:grid;place-items:center;flex:none}
+.mark svg{width:22px;height:22px}
+.links{display:flex;gap:4px;margin-left:auto}
+.links a{text-decoration:none;font-weight:600;font-size:15px;padding:8px 12px;border-radius:10px;color:var(--muted)}
+.links a:hover,.links a.on{color:var(--ink);background:var(--surface)}
+.progress{position:absolute;left:0;right:0;bottom:-1px;height:3px;pointer-events:none}
+.progress i{display:block;height:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
+
+/* hero */
+.hero{padding-block:clamp(24px,5vw,64px) clamp(56px,8vw,96px);position:relative}
+.hero-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(24px,5vw,72px);align-items:center}
+.hero-copy{display:flex;flex-direction:column;gap:24px;min-width:0}
+.hero h1{font-size:clamp(46px,6.6vw,92px);text-transform:uppercase;line-height:.9}
+.hero h1 .hl{color:var(--accent);position:relative;white-space:nowrap}
+.hero h1 .tally{display:inline-block;width:.78em;height:.62em;vertical-align:.04em;margin-left:.12em}
+.hero .lede{max-width:52ch}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.facts{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:14.5px;font-weight:600;color:var(--muted)}
+.facts span{display:inline-flex;align-items:center;gap:7px}
+.facts .ic{width:18px;height:18px;color:var(--ok)}
+.hero-visual{position:relative;display:flex;justify-content:center;padding-block:20px;min-width:0}
+.float{position:absolute;z-index:3;display:flex;align-items:center;gap:9px;background:var(--surface);border-radius:14px;padding:9px 13px;box-shadow:var(--shadow-lg);font-size:14px;font-weight:600;white-space:nowrap;will-change:translate}
+.float .ic{width:18px;height:18px}
+.float b{font-variant-numeric:tabular-nums}
+.f1{top:40%;right:calc(50% + 112px);rotate:-4deg}
+.f1 .ic{color:var(--accent)}
+.f2{top:3%;left:calc(50% + 96px);rotate:3deg;padding:8px 10px}
+.f3{bottom:19%;right:calc(50% + 104px);background:var(--ok-bg);color:var(--ok);rotate:-2deg}
+.f4{top:60%;left:calc(50% + 112px);background:var(--purple-bg);color:var(--purple);rotate:4deg}
+
+/* phone */
+.phone{width:300px;max-width:100%;aspect-ratio:300/620;border-radius:46px;background:var(--frame);padding:10px;box-shadow:var(--shadow-lg),inset 0 0 0 2px rgba(255,255,255,.08);position:relative;flex:none}
+.phone::before{content:"";position:absolute;top:19px;left:50%;translate:-50% 0;width:84px;height:22px;border-radius:12px;background:var(--frame);z-index:4}
+.phone>.screen{height:100%;border-radius:36px}
+
+/* app screen mockups */
+.screen{background:var(--scr-bg);color:var(--scr-ink);font-size:11.5px;line-height:1.3;overflow:hidden;padding:46px 12px 12px;display:flex;flex-direction:column;gap:8px;position:relative;text-align:left}
+.s-head{display:flex;align-items:center;gap:8px}
+.s-back{width:28px;height:28px;border-radius:9px;background:var(--scr-surface);display:grid;place-items:center;flex:none}
+.s-back .ic{width:15px;height:15px}
+.s-eye{font-family:var(--f-mono);font-size:9.5px;color:var(--scr-muted);letter-spacing:.04em}
+.s-title{font-family:var(--f-display);font-weight:700;font-size:18px;line-height:1.05}
+.s-card{background:var(--scr-surface);border-radius:13px;padding:9px 10px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.s-model{font-family:var(--f-display);font-weight:700;font-size:15px;line-height:1.1}
+.s-muted{color:var(--scr-muted);font-size:10px}
+.s-flex{display:flex;align-items:center;gap:8px}
+.s-sp{justify-content:space-between}
+.s-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--scr-line)}
+.s-row:last-child{border-bottom:0}
+.s-ic{width:26px;height:26px;border-radius:8px;background:var(--scr-bg);display:grid;place-items:center;color:var(--scr-muted);flex:none}
+.s-ic .ic{width:14px;height:14px}
+.s-ic.hot{background:var(--accent-soft);color:var(--accent)}
+.s-mid{flex:1;min-width:0}
+.s-name{font-weight:600;font-size:11px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-sub{font-size:9.5px;color:var(--scr-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-amt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.s-h{font-family:var(--f-display);font-weight:700;font-size:13.5px;display:flex;align-items:center;gap:6px}
+.s-badge{min-width:17px;height:17px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font-size:9.5px;font-weight:700;display:inline-grid;place-items:center;padding:0 4px}
+.s-plus{width:24px;height:24px;border-radius:8px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.s-plus .ic{width:14px;height:14px}
+.s-btn{background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:10px;font-weight:700;font-size:12px;display:flex;gap:6px;justify-content:center;align-items:center;margin-top:auto}
+.s-btn .ic{width:15px;height:15px}
+.s-btn.dark{background:var(--scr-ink);color:var(--scr-bg)}
+.s-pill{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;white-space:nowrap}
+.s-pill .ic{width:10px;height:10px}
+.p-repair{background:var(--blue-bg);color:var(--blue)} .p-ready{background:var(--purple-bg);color:var(--purple)} .p-paid{background:var(--ok-bg);color:var(--ok)} .p-wait{background:var(--warn-bg);color:var(--warn)}
+.s-track{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;text-align:center;font-size:8.5px;font-weight:600;color:var(--scr-muted)}
+.s-track span{display:flex;flex-direction:column;align-items:center;gap:3px}
+.s-track i{width:22px;height:22px;border-radius:50%;background:var(--scr-surface);display:grid;place-items:center}
+.s-track i .ic{width:12px;height:12px}
+.s-track .done i{background:var(--scr-ink);color:var(--scr-bg)}
+.s-track .cur{color:var(--scr-ink)}
+.s-track .cur i{background:var(--accent);color:var(--accent-ink)}
+.s-total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px dashed var(--scr-line);padding-top:6px;margin-top:2px;font-weight:700}
+.s-total b{font-family:var(--f-display);font-size:21px}
+.s-label{font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--scr-muted);display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.s-label .req{color:var(--accent)}
+.s-label .opt{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500}
+.s-inp{background:var(--scr-surface);border:1.5px solid var(--scr-line);border-radius:10px;padding:7px 9px;font-size:11.5px}
+.s-inp.focus{border-color:var(--accent)}
+.s-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.s-chips span{border:1.5px solid var(--scr-line);background:var(--scr-surface);border-radius:7px;padding:2px 6px;font-size:9.5px;font-weight:600}
+.s-chips span.on{border-color:var(--accent);background:var(--accent-soft)}
+.s-hchips{display:flex;gap:5px;overflow:hidden}
+.s-hchips span{display:inline-flex;align-items:center;gap:4px;background:var(--scr-surface);border-radius:99px;padding:5px 9px;font-size:10px;font-weight:600;white-space:nowrap}
+.s-hchips span.on{background:var(--scr-ink);color:var(--scr-bg)}
+.s-hchips .ic{width:11px;height:11px}
+.s-search{display:flex;align-items:center;gap:7px;background:var(--scr-surface);border-radius:11px;padding:8px 10px;color:var(--scr-muted)}
+.s-search .ic{width:14px;height:14px}
+.s-pay{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.s-pay span{background:var(--scr-surface);border:1.5px solid var(--scr-line);border-radius:10px;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:600}
+.s-pay span.on{border-color:var(--accent);background:var(--accent-soft)}
+.s-pay .ic{width:15px;height:15px}
+.s-change{display:flex;justify-content:space-between;align-items:center;background:var(--ok-bg);color:var(--ok);border-radius:11px;padding:9px 11px;font-weight:700}
+.s-change b{font-family:var(--f-display);font-size:20px}
+.s-who{display:inline-flex;align-items:center;gap:2px}
+.s-who .ic{width:10px;height:10px}
+.s-step{display:flex;align-items:center;background:var(--scr-bg);border-radius:8px}
+.s-step span{width:20px;height:20px;display:grid;place-items:center}
+.s-step .ic{width:11px;height:11px}
+.s-step b{min-width:12px;text-align:center;font-size:10.5px}
+.plate{font-family:var(--f-mono);font-weight:600;letter-spacing:.06em;background:var(--plate);color:var(--plate-ink);border:1.5px solid var(--plate-ink);border-radius:5px;padding:0 6px;line-height:1.5;white-space:nowrap;font-size:10px}
+.plate.big{font-size:15px;border-width:2px;padding:1px 8px;border-radius:6px}
+.float .plate{font-size:15px;border-width:2px}
+
+/* marquee */
+.marquee-clip{overflow:hidden;padding-block:18px;margin-block:-18px}
+.marquee{background:var(--accent);color:var(--accent-ink);overflow:hidden;padding-block:14px;rotate:-1.2deg;margin-inline:-20px;position:relative;z-index:2}
+.marquee-track{display:flex;width:max-content;animation:marq 38s linear infinite}
+.marquee-track span{font-family:var(--f-display);font-weight:800;font-size:clamp(20px,2.6vw,30px);text-transform:uppercase;padding-inline:20px;display:inline-flex;align-items:center;gap:40px;white-space:nowrap}
+.marquee-track span::after{content:"";width:10px;height:10px;border-radius:2px;background:currentColor;opacity:.55;rotate:45deg}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* problem */
+.pains{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pain{background:var(--surface);border-radius:20px;padding:26px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow-sm);min-width:0}
+.pain .pi{width:48px;height:48px;border-radius:14px;background:var(--danger-bg);color:var(--danger);display:grid;place-items:center}
+.pain .pi .ic{width:24px;height:24px}
+.pain q{font-family:var(--f-display);font-weight:700;font-size:25px;line-height:1.05;quotes:"“" "”"}
+.pain p{color:var(--muted);font-size:16px}
+.fixline{margin-top:28px;display:flex;align-items:center;gap:14px;font-size:clamp(18px,2vw,22px);font-weight:600;max-width:820px}
+.fixline .ic{width:28px;height:28px;color:var(--ok);flex:none}
+
+/* how it works (dark band) */
+.band{background:var(--band);color:var(--band-ink)}
+.band .lede{color:var(--band-muted)}
+.band .eyebrow{color:var(--accent)}
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,72px)}
+.steps{list-style:none;margin:0;padding:0}
+.step{min-height:78vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-block:24px;opacity:.38;transition:opacity .4s}
+.step.on{opacity:1}
+.step:first-child{min-height:62vh}
+.step:last-child{min-height:70vh}
+.step-n{font-family:var(--f-mono);font-size:14px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:12px}
+.step-n::after{content:"";height:1px;flex:0 0 60px;background:var(--band-line)}
+.step h3{font-size:clamp(30px,3.6vw,46px);font-weight:800;text-transform:uppercase}
+.step p{color:var(--band-muted);font-size:18px;max-width:46ch}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--band-line);background:var(--band-2);border-radius:99px;padding:6px 12px;font-size:14px;font-weight:600}
+.tags .ic{width:15px;height:15px;color:var(--accent)}
+.step-phone{display:none}
+.stage-col{position:relative}
+.stage-wrap{position:sticky;top:calc(50vh - 330px);display:flex;flex-direction:column;align-items:center;gap:22px;padding-block:20px}
+.stage{position:relative}
+.stage .screen{position:absolute;inset:10px;border-radius:36px;opacity:0;transform:translateY(14px) scale(.985);transition:opacity .45s,transform .45s cubic-bezier(.2,.7,.2,1)}
+.stage .screen.on{opacity:1;transform:none}
+.rail{display:flex;gap:8px}
+.rail button{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:99px;background:var(--band-2);color:var(--band-muted);font-size:13px;font-weight:600;border:1px solid var(--band-line);transition:.25s}
+.rail button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.rail b{font-family:var(--f-mono)}
+
+/* try it */
+.bench{display:grid;grid-template-columns:1.25fr .95fr;gap:24px;align-items:start}
+.shelf-col{display:flex;flex-direction:column;gap:18px;min-width:0}
+.shelf-h{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:20px}
+.shelf-h .ic{width:22px;height:22px;color:var(--accent)}
+.shelf{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.part{background:var(--surface);border-radius:16px;padding:14px 12px 12px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:8px;text-align:left;position:relative;transition:transform .15s,box-shadow .2s;min-width:0}
+.part:hover{transform:translateY(-3px)}
+.part:active{transform:scale(.97)}
+.part[disabled]{opacity:.45;cursor:not-allowed;transform:none}
+.part .pi{width:38px;height:38px;border-radius:12px;background:var(--bg-2);display:grid;place-items:center;color:var(--muted)}
+.part .pi .ic{width:20px;height:20px}
+.part.in .pi{background:var(--accent-soft);color:var(--accent)}
+.part .nm{font-weight:600;font-size:14px;line-height:1.2}
+.part .pr{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;margin-top:auto}
+.part .st{font-size:12.5px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.part .st.low{color:var(--danger)}
+.part .q{position:absolute;top:10px;right:10px;min-width:24px;height:24px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font-size:12.5px;font-weight:700;display:grid;place-items:center;padding:0 6px;transform:scale(0);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.part.in .q{transform:scale(1)}
+.labor{display:flex;flex-wrap:wrap;gap:8px}
+.labor button{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:9px 13px;font-weight:600;font-size:14.5px}
+.labor button .ic{width:16px;height:16px;color:var(--muted)}
+.labor button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.labor button[aria-pressed="true"] .ic{color:var(--accent)}
+.labor b{font-variant-numeric:tabular-nums}
+.receipt-col{position:sticky;top:88px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.receipt{background:var(--paper);color:var(--paper-ink);font-family:var(--f-mono);font-size:13.5px;line-height:1.55;padding:22px 20px 34px;border-radius:8px 8px 0 0;box-shadow:var(--shadow-lg);
+  -webkit-mask:radial-gradient(circle at 9px 100%,transparent 7px,#000 7.5px) -9px 0/18px 100% repeat-x;mask:radial-gradient(circle at 9px 100%,transparent 7px,#000 7.5px) -9px 0/18px 100% repeat-x}
+.rc-c{text-align:center}
+.rc-shop{font-family:var(--f-display);font-weight:800;font-size:22px;letter-spacing:.02em}
+.receipt hr{border:0;border-top:1.5px dashed var(--paper-line);margin:12px 0}
+.rc-ln{display:flex;align-items:center;gap:8px}
+.rc-ln .t{flex:1;min-width:0;overflow-wrap:anywhere}
+.rc-ln .a{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rc-ln button{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;background:#ECE7DA;color:#5A5348;flex:none}
+.rc-ln button .ic{width:14px;height:14px}
+.rc-ln.new{animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{from{background:#FFE6B8;transform:translateX(-8px)}to{background:transparent;transform:none}}
+.rc-empty{color:#7A746A;text-align:center;padding:8px 0}
+.rc-tot{font-size:19px;font-weight:600}
+.rc-tot .a{font-size:24px}
+.pay{background:var(--surface);border-radius:18px;padding:16px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px}
+.pay-h{font-weight:700;display:flex;align-items:center;gap:8px;font-size:15px}
+.pay-h .ic{width:18px;height:18px;color:var(--accent)}
+.cash{display:flex;flex-wrap:wrap;gap:8px}
+.cash button{border:2px solid var(--line);border-radius:11px;padding:7px 12px;font-weight:700;font-variant-numeric:tabular-nums;font-size:14.5px}
+.cash button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.change{display:flex;justify-content:space-between;align-items:center;border-radius:13px;padding:11px 14px;font-weight:700;background:var(--bg-2);color:var(--muted)}
+.change b{font-family:var(--f-display);font-size:26px;font-variant-numeric:tabular-nums}
+.change.ok{background:var(--ok-bg);color:var(--ok)}
+.change.short{background:var(--danger-bg);color:var(--danger)}
+.reset{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;color:var(--muted);padding:6px 4px}
+.reset .ic{width:16px;height:16px}
+.note{font-size:13.5px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.note .ic{width:16px;height:16px;flex:none}
+
+/* features bento */
+.bento{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-flow:dense;gap:14px}
+.tile{background:var(--surface);border-radius:22px;padding:22px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;min-width:0;position:relative;overflow:hidden;transition:transform .2s}
+.tile:hover{transform:translateY(-3px)}
+.tile .ti{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent)}
+.tile .ti .ic{width:22px;height:22px}
+.tile h3{font-size:21px}
+.tile p{color:var(--muted);font-size:15.5px}
+.tile.w2{grid-column:span 2}
+.tile.h2{grid-row:span 2}
+.tile.dark{background:var(--band);color:var(--band-ink)}
+.tile.dark p{color:var(--band-muted)}
+.chart{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:190px;margin-top:auto;padding-top:20px}
+.bar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;min-width:0}
+.bar i{display:block;width:100%;max-width:38px;border-radius:8px 8px 3px 3px;background:var(--band-line);transform-origin:50% 100%;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.bar.hi i{background:var(--accent)}
+.bar small{font-size:11.5px;color:var(--band-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar span{font-size:12px;font-weight:600;color:var(--band-muted)}
+.rv.pending .bar i{transform:scaleY(.06)}
+.bar:nth-child(2) i{transition-delay:.06s}.bar:nth-child(3) i{transition-delay:.12s}.bar:nth-child(4) i{transition-delay:.18s}.bar:nth-child(5) i{transition-delay:.24s}.bar:nth-child(6) i{transition-delay:.3s}.bar:nth-child(7) i{transition-delay:.36s}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{display:inline-flex;align-items:center;gap:6px;background:var(--band-2);border:1px solid var(--band-line);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:600}
+.chips span.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chips .ic{width:14px;height:14px}
+.paylist{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:auto}
+.paylist span{background:var(--bg);border-radius:14px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:700;font-size:14px}
+.paylist .ic{width:22px;height:22px;color:var(--accent)}
+.mini-track{display:flex;align-items:center;gap:6px;margin-top:auto;flex-wrap:wrap}
+.mini-track span{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:5px 10px;font-size:13px;font-weight:700}
+.mini-track span .ic{width:14px;height:14px}
+.mini-track .ar{width:14px;height:14px;color:var(--muted)}
+
+/* roles */
+.roles h2{font-size:clamp(32px,4.2vw,50px)}
+.roles{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(24px,5vw,64px);align-items:center}
+.seg{display:inline-flex;background:var(--bg-2);border-radius:16px;padding:5px;gap:4px;align-self:flex-start;flex-wrap:wrap}
+.seg button{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;font-weight:700;font-size:15px;color:var(--muted)}
+.seg button .ic{width:18px;height:18px}
+.seg button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+.role-panel{background:var(--surface);border-radius:24px;padding:clamp(20px,3vw,32px);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:18px}
+.role-top{display:flex;align-items:center;gap:14px}
+.avatar{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:21px;background:var(--ink);color:var(--bg);flex:none}
+.avatar.mech{background:var(--blue);color:#fff}
+.role-top b{font-size:19px;display:block}
+.role-top small{color:var(--muted);font-size:14.5px}
+.can{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.can li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;font-weight:500}
+.can .ic{width:20px;height:20px;margin-top:2px}
+.can .y .ic{color:var(--ok)}
+.can .n{color:var(--muted)}
+.can .n .ic{color:var(--danger)}
+
+/* install */
+.installs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.inst{background:var(--surface);border-radius:22px;padding:26px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:16px}
+.inst-h{display:flex;align-items:center;gap:12px}
+.inst-h .ti{width:46px;height:46px;border-radius:14px;background:var(--ink);color:var(--bg);display:grid;place-items:center}
+.inst-h .ti .ic{width:22px;height:22px}
+.inst-h b{font-size:19px;display:block}
+.inst-h small{color:var(--muted);font-size:14px}
+.inst ol{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:12px}
+.inst li{counter-increment:s;display:flex;gap:12px;align-items:center;font-size:16px}
+.inst li::before{content:counter(s);width:30px;height:30px;border-radius:10px;background:var(--accent-soft);color:var(--accent-deep);font-family:var(--f-mono);font-weight:600;display:grid;place-items:center;flex:none;font-size:14px}
+.inst li .ic{width:18px;height:18px;vertical-align:-3px;color:var(--accent)}
+.kbd{font-weight:700;background:var(--bg-2);border-radius:7px;padding:1px 7px;white-space:nowrap}
+
+/* faq */
+.faq{display:flex;flex-direction:column;gap:10px;max-width:860px}
+.faq details{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-sm);overflow:hidden}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:14px;padding:20px 22px;font-weight:700;font-size:18px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .ic{width:22px;height:22px;margin-left:auto;color:var(--accent);transition:rotate .25s}
+.faq details[open] summary .ic{rotate:45deg}
+.faq .ans{padding:0 22px 22px;color:var(--muted);max-width:68ch}
+
+/* final cta */
+.cta{text-align:center;display:flex;flex-direction:column;align-items:center;gap:26px}
+.cta h2{font-size:clamp(44px,8vw,104px)}
+.cta h2 span{color:var(--accent)}
+.foot{border-top:1px solid var(--band-line);padding-block:28px;color:var(--band-muted);font-size:14.5px}
+.foot .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between}
+.foot .brand{font-size:19px;color:var(--band-ink)}
+.foot .mark{width:30px;height:30px;border-radius:9px}
+.foot .mark svg{width:18px;height:18px}
+
+/* mobile floating nav */
+.mnav{display:none}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));translate:-50% 20px;background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:14px;font-weight:600;font-size:14.5px;z-index:80;opacity:0;transition:.25s;pointer-events:none;display:flex;gap:8px;align-items:center;max-width:calc(100% - 40px)}
+.toast .ic{width:18px;height:18px;color:var(--accent)}
+.toast.show{opacity:1;translate:-50% 0}
+
+/* reveal */
+.rv{transition:transform .8s cubic-bezier(.2,.7,.2,1),opacity .8s}
+.rv.pending{transform:translateY(30px);opacity:.3}
+
+/* ---------- responsive ---------- */
+@media (max-width:1080px){
+  .shelf{grid-template-columns:repeat(3,1fr)}
+  .bento{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-visual{padding-block:10px 30px}
+  .how-grid{grid-template-columns:1fr}
+  .stage-col{display:none}
+  .step{min-height:0;opacity:1;padding-block:28px;border-top:1px solid var(--band-line)}
+  .step:first-child{min-height:0;border-top:0}
+  .step:last-child{min-height:0}
+  .step-phone{display:flex;justify-content:center;padding-top:10px}
+  .step-phone .phone{width:270px}
+  .bench{grid-template-columns:1fr}
+  .receipt-col{position:static}
+  .roles{grid-template-columns:1fr}
+  .pains{grid-template-columns:1fr}
+  .installs{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .links,.hdr .btn{display:none}
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .mnav{display:grid;grid-template-columns:repeat(5,1fr);align-items:center;position:fixed;left:50%;translate:-50% 0;bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(380px,calc(100% - 32px));background:var(--band);border-radius:24px;padding:7px 8px;z-index:70;box-shadow:0 12px 30px rgba(8,12,16,.35)}
+  .mnav a{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--band-muted);font-size:10.5px;font-weight:600;text-decoration:none;padding:5px 0;border-radius:14px}
+  .mnav a .ic{width:22px;height:22px}
+  .mnav a.on{color:#fff}
+  .mnav a.on::after{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent)}
+  .mnav a:not(.on):not(.fab)::after{content:"";width:5px;height:5px}
+  .mnav .fab{width:56px;height:56px;border-radius:19px;background:var(--accent);color:var(--accent-ink);margin:-26px auto 0;display:grid;place-items:center;border:4px solid var(--bg);box-shadow:0 8px 20px rgba(226,85,43,.45);padding:0}
+  .mnav .fab .ic{width:26px;height:26px}
+  .shelf{grid-template-columns:repeat(2,1fr)}
+  .can{grid-template-columns:1fr}
+  .paylist{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:560px){
+  .bento{grid-template-columns:1fr}
+  .tile.w2{grid-column:auto}
+  .tile.h2{grid-row:auto}
+  .chart{height:150px;gap:6px}
+  .bar small{font-size:10px}
+  .hero-visual .phone{width:262px}
+  .float{font-size:12.5px;padding:7px 10px}
+  .float .plate{font-size:12.5px}
+  .f1,.f4{display:none}
+  .f2{left:auto;right:0;top:2%} .f3{right:auto;left:0;bottom:8%}
+  .ctas .btn{flex:1 1 220px}
+  .marquee{rotate:-2deg}
+  .pain{padding:22px 20px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<header class="hdr" id="hdr">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Talyer Tally home">
+      <span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5v14M9.5 5v14M14 5v14M18.5 5v14M3 16.5 21 7.5"/></svg></span>
+      Talyer Tally
+    </a>
+    <nav class="links" aria-label="Sections">
+      <a href="#how" data-nav="how">How it works</a>
+      <a href="#try" data-nav="try">Try it</a>
+      <a href="#features" data-nav="features">Features</a>
+      <a href="#faq" data-nav="faq">FAQ</a>
+    </nav>
+    <a class="btn sm" href="app/index.html"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg>Open the demo</a>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progress"></i></div>
+</header>
+
+<main id="top">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">For motorshops across the Philippines</span>
+        <h1>Every part taken. Every peso <span class="hl">counted<svg class="tally" viewBox="0 0 40 32" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" aria-hidden="true"><path d="M6 4v24M15 4v24M24 4v24M33 4v24M2 22 38 9"/></svg></span></h1>
+        <p class="lede">Talyer Tally logs every motorcycle that rolls in, tallies each part your mechanics pull off the shelf, and hands the customer one clear total. Wala nang listahan sa karton.</p>
+        <div class="ctas">
+          <a class="btn" href="app/index.html"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg>Open the live demo</a>
+          <a class="btn ghost" href="#how"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14" /> <path d="m19 12-7 7-7-7" /></svg>See how it works</a>
+        </div>
+        <div class="facts">
+          <span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg>No sign-up for the demo</span>
+          <span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg>Works offline</span>
+          <span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg>Phone, tablet or PC</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="The Talyer Tally job order screen">
+        <div class="float f1" data-speed="0.12"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 16h6" /> <path d="M19 13v6" /> <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" /> <path d="m7.5 4.27 9 5.15" /> <polyline points="3.29 7 12 12 20.71 7" /> <line x1="12" x2="12" y1="22" y2="12" /></svg>CVT drive belt <b>+₱950</b></div>
+        <div class="float f2" data-speed="0.2"><span class="plate">7810 QK</span></div>
+        <div class="float f4" data-speed="0.08"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" /></svg>Tapos na · for bill-out</div>
+        <div class="float f3" data-speed="0.16"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Sukli <b>₱275.00</b></div>
+        <div class="phone">
+          <div class="screen">
+            <div class="s-head"><span class="s-back"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></span><div><div class="s-eye">JO-1050</div><div class="s-title">Carlo Mendoza</div></div></div>
+            <div class="s-card">
+              <div class="s-flex s-sp" style="align-items:flex-start"><div><div class="s-model">Honda Click 125i</div><div class="s-muted">Red · In since 9:12 AM</div></div><span class="plate big">7810 QK</span></div>
+            </div>
+            <div class="s-track">
+              <span class="done"><i><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <polyline points="12 6 12 12 16 14" /></svg></i>Waiting</span>
+              <span class="cur"><i><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></i>Repairing</span>
+              <span><i><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /> <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /> <path d="M12 17.5v-11" /></svg></i>Bill-out</span>
+              <span><i><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg></i>Paid</span>
+            </div>
+            <div class="s-flex s-sp"><span class="s-h">Parts taken <span class="s-badge">3</span></span><span class="s-pill p-repair"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 16h6" /> <path d="M19 13v6" /> <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" /> <path d="m7.5 4.27 9 5.15" /> <polyline points="3.29 7 12 12 20.71 7" /> <line x1="12" x2="12" y1="22" y2="12" /></svg>Take part</span></div>
+            <div class="s-card" style="padding-block:2px">
+              <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">CVT drive belt (Click 125i)</div><div class="s-sub">Mark · 9:31 AM</div></div><span class="s-amt">₱950</span></div>
+              <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">Roller weights 12g · set</div><div class="s-sub">Mark · 9:38 AM</div></div><span class="s-amt">₱380</span></div>
+              <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" /></svg></span><div class="s-mid"><div class="s-name">Scooter gear oil · 120ml</div><div class="s-sub">Mark · 9:45 AM</div></div><span class="s-amt">₱95</span></div>
+            </div>
+            <div class="s-card" style="padding-block:2px"><div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span><div class="s-mid"><div class="s-name">CVT cleaning</div><div class="s-sub">Labor</div></div><span class="s-amt">₱300</span></div></div>
+            <div class="s-card"><div class="s-total"><span>Total to pay</span><b>₱1,725.00</b></div></div>
+            <div class="s-btn dark"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" /></svg>Tapos na · send for bill-out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee-clip"><div class="marquee" aria-hidden="true">
+    <div class="marquee-track" id="marquee">
+      <span>Honda Click 125i</span><span>Yamaha NMAX 155</span><span>Mio i125</span><span>Suzuki Raider R150</span><span>Honda TMX 155</span><span>Kawasaki Barako 175</span><span>Honda Beat</span><span>Yamaha Aerox 155</span><span>Suzuki Smash 115</span><span>Honda ADV 160</span>
+      <span>Honda Click 125i</span><span>Yamaha NMAX 155</span><span>Mio i125</span><span>Suzuki Raider R150</span><span>Honda TMX 155</span><span>Kawasaki Barako 175</span><span>Honda Beat</span><span>Yamaha Aerox 155</span><span>Suzuki Smash 115</span><span>Honda ADV 160</span>
+    </div>
+  </div></div>
+
+  <!-- PROBLEM -->
+  <section class="sec" id="why">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Sound familiar?</span>
+        <h2>The tally is where the money leaks</h2>
+      </div>
+      <div class="pains">
+        <article class="pain rv"><span class="pi"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4" /> <path d="M2 6h4" /> <path d="M2 10h4" /> <path d="M2 14h4" /> <path d="M2 18h4" /> <path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z" /></svg></span><q>Listahan sa karton</q><p>Parts get written on cardboard, or not at all. By closing time nobody remembers who took the spark plug or which motor it went into.</p></article>
+        <article class="pain rv" style="transition-delay:.08s"><span class="pi"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="16" height="20" x="4" y="2" rx="2" /> <line x1="8" x2="16" y1="6" y2="6" /> <line x1="16" x2="16" y1="14" y2="18" /> <path d="M16 10h.01" /> <path d="M12 10h.01" /> <path d="M8 10h.01" /> <path d="M12 14h.01" /> <path d="M8 14h.01" /> <path d="M12 18h.01" /> <path d="M8 18h.01" /></svg></span><q>Compute ulit</q><p>The total gets added on a calculator twice and still comes out different. Labor is guessed, discounts are forgotten.</p></article>
+        <article class="pain rv" style="transition-delay:.16s"><span class="pi"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></svg></span><q>Bakit ganito kamahal?</q><p>The customer sees one number with no breakdown, so every bill turns into a debate at the counter.</p></article>
+      </div>
+      <p class="fixline rv"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <path d="m9 12 2 2 4-4" /></svg>Talyer Tally keeps the tally from the moment the motor rolls in to the moment it is paid.</p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="band sec" id="how">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">How it works</span>
+        <h2>From drop-off to bayad in four steps</h2>
+        <p class="lede">Scroll through one real job: a Honda Click with a noisy CVT.</p>
+      </div>
+      <div class="how-grid">
+        <ol class="steps">
+          <li class="step on" data-step="0">
+            <span class="step-n">01</span>
+            <h3>Log the motor</h3>
+            <p>Type the customer's name and pick the motorcycle. Plate, phone and the problem are optional, so the job starts in seconds.</p>
+            <div class="tags"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /> <circle cx="12" cy="7" r="4" /></svg>Name + motorcycle only</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Assign a mechanic</span></div>
+            <div class="step-phone"><div class="phone"></div></div>
+          </li>
+          <li class="step" data-step="1">
+            <span class="step-n">02</span>
+            <h3>Take parts off the shelf</h3>
+            <p>The mechanic taps each part as he pulls it. Stock goes down by itself, and the part lands on that motor's job order.</p>
+            <div class="tags"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /> <path d="m7.5 4.27 9 5.15" /></svg>Stock updates itself</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></svg>Low-stock alerts</span></div>
+            <div class="step-phone"><div class="phone"></div></div>
+          </li>
+          <li class="step" data-step="2">
+            <span class="step-n">03</span>
+            <h3>Watch the tally build</h3>
+            <p>Every line shows the part, who took it and when. Add labor from presets like Change oil ₱100 or CVT cleaning ₱300.</p>
+            <div class="tags"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></svg>Who took it, and when</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>Labor presets</span></div>
+            <div class="step-phone"><div class="phone"></div></div>
+          </li>
+          <li class="step" data-step="3">
+            <span class="step-n">04</span>
+            <h3>Bill out and give sukli</h3>
+            <p>The owner sees one clear total, picks Cash, GCash, Maya or Card, and the app works out the change. The receipt is ready to copy.</p>
+            <div class="tags"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Change computed</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /> <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /> <path d="M12 17.5v-11" /></svg>Itemized receipt</span></div>
+            <div class="step-phone"><div class="phone"></div></div>
+          </li>
+        </ol>
+
+        <div class="stage-col">
+          <div class="stage-wrap">
+            <div class="phone stage" id="stage">
+              <!-- 1: new job -->
+              <div class="screen on">
+                <div class="s-head"><span class="s-back"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg></span><div class="s-title">New job order</div></div>
+                <div><div class="s-label"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /> <circle cx="12" cy="7" r="4" /></svg>Customer name <span class="req">*</span></div><div class="s-inp">Carlo Mendoza</div></div>
+                <div><div class="s-label"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="16.5" r="3"/><circle cx="19" cy="16.5" r="3"/><path d="M5 16.5h3l3-5h4.5l3.5 5"/><path d="M14 11.5 12.5 7H16"/><path d="M8.5 11.5H11"/></svg>Motorcycle <span class="req">*</span></div><div class="s-inp focus">Honda Click 125i</div>
+                  <div class="s-chips"><span class="on">Honda Click 125i</span><span>Yamaha NMAX 155</span><span>Mio i125</span><span>Raider R150</span><span>TMX 155</span></div></div>
+                <div class="s-flex" style="gap:6px;align-items:flex-start">
+                  <div style="flex:1"><div class="s-label">Plate <span class="opt">Optional</span></div><div class="s-inp" style="font-family:var(--f-mono)">7810 QK</div></div>
+                  <div style="flex:1"><div class="s-label">Color <span class="opt">Optional</span></div><div class="s-inp">Red</div></div>
+                </div>
+                <div><div class="s-label">Problem <span class="opt">Optional</span></div><div class="s-inp">May ingay sa panggilid</div></div>
+                <div><div class="s-label"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Mechanic</div><div class="s-pay" style="grid-template-columns:repeat(3,1fr)"><span class="on">Mark</span><span>Ronel</span><span>Paolo</span></div></div>
+                <div class="s-btn"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="m9 14 2 2 4-4" /></svg>Create job order</div>
+              </div>
+              <!-- 2: take parts -->
+              <div class="screen">
+                <div class="s-head"><span class="s-back"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg></span><div class="s-title">Take parts · 7810 QK</div></div>
+                <div class="s-search"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2" /> <path d="M17 3h2a2 2 0 0 1 2 2v2" /> <path d="M21 17v2a2 2 0 0 1-2 2h-2" /> <path d="M7 21H5a2 2 0 0 1-2-2v-2" /> <path d="M8 7v10" /> <path d="M12 7v10" /> <path d="M17 7v10" /></svg>Search or scan part</div>
+                <div class="s-hchips"><span>All</span><span class="on"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg>CVT &amp; drive</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" /></svg>Oil</span></div>
+                <div class="s-card" style="padding-block:2px">
+                  <div class="s-row"><span class="s-ic hot"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">CVT drive belt (Click)</div><div class="s-sub" style="color:var(--danger)">3 on shelf · ₱950</div></div><span class="s-badge">1</span><span class="s-plus"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div>
+                  <div class="s-row"><span class="s-ic hot"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">Roller weights 12g · set</div><div class="s-sub">8 on shelf · ₱380</div></div><span class="s-badge">1</span><span class="s-plus"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div>
+                  <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">Clutch bell (Mio)</div><div class="s-sub">2 on shelf · ₱1,250</div></div><span class="s-plus"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div>
+                  <div class="s-row"><span class="s-ic hot"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" /></svg></span><div class="s-mid"><div class="s-name">Scooter gear oil · 120ml</div><div class="s-sub">23 on shelf · ₱95</div></div><span class="s-badge">1</span><span class="s-plus"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div>
+                  <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">Chain &amp; sprocket 428</div><div class="s-sub">3 on shelf · ₱1,450</div></div><span class="s-plus"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div>
+                </div>
+                <div class="s-btn dark"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Done · 3 parts on this job</div>
+              </div>
+              <!-- 3: tally -->
+              <div class="screen">
+                <div class="s-head"><span class="s-back"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></span><div><div class="s-eye">JO-1050</div><div class="s-title">Carlo Mendoza</div></div></div>
+                <div class="s-flex s-sp"><span class="s-h">Parts taken <span class="s-badge">3</span></span></div>
+                <div class="s-card" style="padding-block:2px">
+                  <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">CVT drive belt</div><div class="s-sub"><span class="s-who"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Mark</span> · 9:31 AM</div></div><div style="text-align:right"><div class="s-step"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /> <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /> <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /> <line x1="10" x2="10" y1="11" y2="17" /> <line x1="14" x2="14" y1="11" y2="17" /></svg></span><b>1</b><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div><div class="s-amt">₱950.00</div></div></div>
+                  <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9" /> <path d="M14 17H5" /> <circle cx="17" cy="17" r="3" /> <circle cx="7" cy="7" r="3" /></svg></span><div class="s-mid"><div class="s-name">Roller weights 12g</div><div class="s-sub"><span class="s-who"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Mark</span> · 9:38 AM</div></div><div style="text-align:right"><div class="s-step"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /> <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /> <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /> <line x1="10" x2="10" y1="11" y2="17" /> <line x1="14" x2="14" y1="11" y2="17" /></svg></span><b>1</b><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div><div class="s-amt">₱380.00</div></div></div>
+                  <div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z" /></svg></span><div class="s-mid"><div class="s-name">Scooter gear oil</div><div class="s-sub"><span class="s-who"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Mark</span> · 9:45 AM</div></div><div style="text-align:right"><div class="s-step"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18" /> <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /> <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /> <line x1="10" x2="10" y1="11" y2="17" /> <line x1="14" x2="14" y1="11" y2="17" /></svg></span><b>1</b><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></span></div><div class="s-amt">₱95.00</div></div></div>
+                </div>
+                <div class="s-flex s-sp"><span class="s-h">Labor</span><span class="s-pill p-wait"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg>Add labor</span></div>
+                <div class="s-card" style="padding-block:2px"><div class="s-row"><span class="s-ic"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg></span><div class="s-mid"><div class="s-name">CVT cleaning</div><div class="s-sub">Labor</div></div><span class="s-amt">₱300.00</span></div></div>
+                <div class="s-card">
+                  <div class="s-flex s-sp s-muted"><span>Parts (3)</span><span class="s-amt">₱1,425.00</span></div>
+                  <div class="s-flex s-sp s-muted"><span>Labor</span><span class="s-amt">₱300.00</span></div>
+                  <div class="s-total"><span>Total to pay</span><b>₱1,725.00</b></div>
+                </div>
+                <div class="s-btn dark"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" /></svg>Tapos na · send for bill-out</div>
+              </div>
+              <!-- 4: bill out -->
+              <div class="screen">
+                <div class="s-head"><span class="s-back"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg></span><div class="s-title">Bill out · JO-1050</div></div>
+                <div class="s-card">
+                  <div class="s-flex s-sp s-muted"><span>Parts (3)</span><span class="s-amt">₱1,425.00</span></div>
+                  <div class="s-flex s-sp s-muted"><span>Labor</span><span class="s-amt">₱300.00</span></div>
+                  <div class="s-total"><span>Amount due</span><b>₱1,725.00</b></div>
+                </div>
+                <div><div class="s-label"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>Payment method</div>
+                  <div class="s-pay"><span class="on"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Cash</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg>GCash</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>Maya</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2" /> <line x1="2" x2="22" y1="10" y2="10" /></svg>Card</span></div></div>
+                <div><div class="s-label"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Cash received</div><div class="s-inp focus" style="font-weight:700">₱ 2,000</div>
+                  <div class="s-chips"><span>₱1,725</span><span>₱1,800</span><span class="on">₱2,000</span></div></div>
+                <div class="s-change"><span>Sukli (change)</span><b>₱275.00</b></div>
+                <div class="s-btn"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg>Confirm payment</div>
+              </div>
+            </div>
+            <div class="rail" role="group" aria-label="Jump to step">
+              <button class="on" data-go="0"><b>01</b>Log</button><button data-go="1"><b>02</b>Parts</button><button data-go="2"><b>03</b>Tally</button><button data-go="3"><b>04</b>Bill</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRY IT -->
+  <section class="sec" id="try">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Subukan</span>
+        <h2>Build a job order yourself</h2>
+        <p class="lede">Tap parts off the shelf and add labor. The receipt tallies itself and works out the sukli.</p>
+      </div>
+      <div class="bench">
+        <div class="shelf-col">
+          <div class="shelf-h"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /> <path d="m7.5 4.27 9 5.15" /></svg>The shelf</div>
+          <div class="shelf" id="shelf"></div>
+          <div class="shelf-h"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>Labor</div>
+          <div class="labor" id="labor"></div>
+          <p class="note"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /></svg>Example shop with sample prices. Nothing here is saved.</p>
+        </div>
+        <div class="receipt-col">
+          <div class="receipt" aria-live="polite">
+            <div class="rc-c"><div class="rc-shop">KUYA JUN MOTOSHOP</div><div>Purok 3, National Highway</div></div>
+            <hr>
+            <div class="rc-ln"><span class="t">JO-1052 · Walk-in</span><span class="a">Honda Click 125i</span></div>
+            <hr>
+            <div id="rcLines"></div>
+            <hr>
+            <div class="rc-ln"><span class="t">Parts</span><span class="a" id="rcParts">₱0.00</span></div>
+            <div class="rc-ln"><span class="t">Labor</span><span class="a" id="rcLabor">₱0.00</span></div>
+            <div class="rc-ln rc-tot"><span class="t">TOTAL</span><span class="a" id="rcTotal">₱0.00</span></div>
+            <hr>
+            <div class="rc-c">Salamat po! Balik po kayo.</div>
+          </div>
+          <div class="pay">
+            <div class="pay-h"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Cash received</div>
+            <div class="cash" id="cash"></div>
+            <div class="change" id="change"><span>Pick an amount</span><b>—</b></div>
+          </div>
+          <button class="reset" id="reset"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></svg>Start over</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="sec" id="features" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Features</span>
+        <h2>Built for the whole talyer</h2>
+        <p class="lede">The counter, the shelf and the service bay in one app.</p>
+      </div>
+      <div class="bento">
+        <article class="tile dark w2 h2 rv">
+          <span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></svg></span>
+          <h3>Reports you can actually read</h3>
+          <p>Sales by day, parts vs labor, parts profit, payment methods and top-selling parts. Pick Today, 7 days, 30 days or your own dates.</p>
+          <div class="chips"><span>Today</span><span class="on"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" /> <path d="M16 2v4" /> <path d="M3 10h18" /> <path d="M8 2v4" /> <path d="M17 14h-6" /> <path d="M13 18H7" /> <path d="M7 14h.01" /> <path d="M17 18h.01" /></svg>7 days</span><span>30 days</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4" /> <path d="M16 2v4" /> <rect width="18" height="18" x="3" y="4" rx="2" /> <path d="M3 10h18" /></svg>Custom</span></div>
+          <div class="chart" aria-label="Example week of daily sales">
+            <div class="bar"><small>₱3.2k</small><i style="height:52%"></i><span>Mon</span></div>
+            <div class="bar"><small>₱4.1k</small><i style="height:67%"></i><span>Tue</span></div>
+            <div class="bar"><small>₱2.8k</small><i style="height:46%"></i><span>Wed</span></div>
+            <div class="bar"><small>₱5.0k</small><i style="height:82%"></i><span>Thu</span></div>
+            <div class="bar"><small>₱4.4k</small><i style="height:72%"></i><span>Fri</span></div>
+            <div class="bar hi"><small>₱6.1k</small><i style="height:100%"></i><span>Sat</span></div>
+            <div class="bar"><small>₱3.9k</small><i style="height:64%"></i><span>Sun</span></div>
+          </div>
+        </article>
+        <article class="tile w2 rv">
+          <span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" /> <path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" /> <path d="m2 16 6 6" /> <circle cx="16" cy="9" r="2.9" /> <circle cx="6" cy="5" r="3" /></svg></span>
+          <h3>Cash, GCash, Maya or Card</h3>
+          <p>Tap the cash received and the sukli shows up. E-wallet payments keep their reference number.</p>
+          <div class="paylist"><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></svg>Cash</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg>GCash</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></svg>Maya</span><span><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="5" rx="2" /> <line x1="2" x2="22" y1="10" y2="10" /></svg>Card</span></div>
+        </article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <path d="m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7" /> <path d="m7.5 4.27 9 5.15" /></svg></span><h3>Parts &amp; stock</h3><p>Every part with price, cost and stock. Low-stock alerts and one-tap restock.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg></span><h3>Mechanics</h3><p>Jobs done, labor earned and commission for each mechanic.</p></article>
+        <article class="tile w2 rv">
+          <span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="M12 11h4" /> <path d="M12 16h4" /> <path d="M8 11h.01" /> <path d="M8 16h.01" /></svg></span>
+          <h3>Every job has a status</h3>
+          <p>See at a glance which motors are waiting, being fixed or ready to pay.</p>
+          <div class="mini-track">
+            <span class="p-wait"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <polyline points="12 6 12 12 16 14" /></svg>Waiting</span><svg class="ic ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            <span class="p-repair"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></svg>Repairing</span><svg class="ic ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            <span class="p-ready"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /> <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /> <path d="M12 17.5v-11" /></svg>Bill-out</span><svg class="ic ar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            <span class="p-paid"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /> <path d="m9 12 2 2 4-4" /></svg>Paid</span>
+          </div>
+        </article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></svg></span><h3>Customer history</h3><p>Every visit by plate number, with what was replaced and what it cost.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" x2="5" y1="5" y2="19" /> <circle cx="6.5" cy="6.5" r="2.5" /> <circle cx="17.5" cy="17.5" r="2.5" /></svg></span><h3>Discounts</h3><p>Fixed amounts, 5% off, or round off the loose change.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h.01" /> <path d="M8.5 16.429a5 5 0 0 1 7 0" /> <path d="M5 12.859a10 10 0 0 1 5.17-2.69" /> <path d="M19 12.859a10 10 0 0 0-2.007-1.523" /> <path d="M2 8.82a15 15 0 0 1 4.177-2.643" /> <path d="M22 8.82a15 15 0 0 0-11.288-3.764" /> <path d="m2 2 20 20" /></svg></span><h3>Works offline</h3><p>Install it on the phone's home screen. It keeps working when the signal drops.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z" /> <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /> <path d="M12 17.5v-11" /></svg></span><h3>Itemized receipts</h3><p>Shop name, every part and labor line, total and sukli. Copy and send.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <circle cx="9" cy="7" r="4" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span><h3>Owner &amp; mechanic views</h3><p>Mechanics take parts. Only the owner bills out and sees costs.</p></article>
+        <article class="tile rv"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.9 4.9 1.4 1.4" /> <path d="m17.7 17.7 1.4 1.4" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.3 17.7-1.4 1.4" /> <path d="m19.1 4.9-1.4 1.4" /></svg></span><h3>Light &amp; dark</h3><p>Easy to read in a bright shop or a dim service bay.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROLES -->
+  <section class="sec" id="roles" style="padding-top:0">
+    <div class="wrap roles">
+      <div class="sec-head rv" style="margin:0">
+        <span class="eyebrow">One app, two views</span>
+        <h2>The owner sees the money. Mechanics see the work.</h2>
+        <p class="lede">Each person picks who they are when they open the app. Switch views to compare.</p>
+        <div class="seg" role="tablist" aria-label="Choose a view">
+          <button role="tab" id="tab-owner" aria-selected="true" aria-controls="panel-owner"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" /> <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /> <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" /> <path d="M2 7h20" /> <path d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7" /></svg>May-ari (Owner)</button>
+          <button role="tab" id="tab-mech" aria-selected="false" aria-controls="panel-mech"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 10V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" /> <path d="M14 6a6 6 0 0 1 6 6v3" /> <path d="M4 15v-3a6 6 0 0 1 6-6" /> <rect x="2" y="15" width="20" height="4" rx="1" /></svg>Mekaniko</button>
+        </div>
+      </div>
+      <div class="rv">
+        <div class="role-panel" role="tabpanel" id="panel-owner" aria-labelledby="tab-owner">
+          <div class="role-top"><span class="avatar">BJ</span><div><b>Boss Jun</b><small>Owner · full access</small></div></div>
+          <ul class="can">
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Sees every job in the shop</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Bills out and takes payment</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Sets prices, costs and stock</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Gives discounts</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Sees reports and parts profit</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Adds mechanics and commission</li>
+          </ul>
+        </div>
+        <div class="role-panel" role="tabpanel" id="panel-mech" aria-labelledby="tab-mech" hidden>
+          <div class="role-top"><span class="avatar mech">MD</span><div><b>Mark Dela Cruz</b><small>Mechanic · own jobs only</small></div></div>
+          <ul class="can">
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Sees the jobs assigned to him</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Takes parts off the shelf</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Adds labor to the job</li>
+            <li class="y"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>Marks a job "Tapos na"</li>
+            <li class="n"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg>Cannot bill out</li>
+            <li class="n"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></svg>Cannot see costs or reports</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="sec" id="install" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Install</span>
+        <h2>Put it on your home screen</h2>
+        <p class="lede">The demo installs like an app, straight from the browser. No app store needed.</p>
+      </div>
+      <div class="installs">
+        <div class="inst rv">
+          <div class="inst-h"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg></span><div><b>Android</b><small>Chrome</small></div></div>
+          <ol>
+            <li><span>Open the <a href="app/index.html">live demo</a> in Chrome.</span></li>
+            <li><span>Tap the <span class="kbd">⋮</span> menu at the top right.</span></li>
+            <li><span>Tap <span class="kbd">Add to Home screen</span> or <span class="kbd">Install app</span>.</span></li>
+          </ol>
+        </div>
+        <div class="inst rv" style="transition-delay:.08s">
+          <div class="inst-h"><span class="ti"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="10" height="14" x="3" y="8" rx="2" /> <path d="M5 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2h-2.4" /> <path d="M8 18h.01" /></svg></span><div><b>iPhone &amp; iPad</b><small>Safari</small></div></div>
+          <ol>
+            <li><span>Open the <a href="app/index.html">live demo</a> in Safari.</span></li>
+            <li><span>Tap <svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /> <polyline points="16 6 12 2 8 6" /> <line x1="12" x2="12" y1="2" y2="15" /></svg> <span class="kbd">Share</span> at the bottom.</span></li>
+            <li><span>Tap <svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M8 12h8" /> <path d="M12 8v8" /></svg> <span class="kbd">Add to Home Screen</span>.</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec" id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">FAQ</span>
+        <h2>Mga tanong</h2>
+      </div>
+      <div class="faq">
+        <details class="rv" open><summary>Is the demo free?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">Yes. The demo runs in your browser with a sample shop already loaded. There is nothing to sign up for.</p></details>
+        <details class="rv"><summary>Where is my data saved?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">In this version, everything stays on the device you use. Sharing jobs between the owner's phone and each mechanic's phone is the next thing being built.</p></details>
+        <details class="rv"><summary>Does it work without internet?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">Yes. Open it once while online, add it to your home screen, and it keeps working when the signal drops.</p></details>
+        <details class="rv"><summary>Can I use my own parts list and prices?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">Yes. The owner can add, edit and remove parts, set the selling price and cost, and restock in one tap. The sample parts are only there to show how it works.</p></details>
+        <details class="rv"><summary>Can mechanics see how much the shop earns?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">No. Mechanics only see their own jobs and the selling price of parts. Costs, profit and reports are for the owner.</p></details>
+        <details class="rv"><summary>Is there an Android app?<svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /> <path d="M12 5v14" /></svg></summary><p class="ans">You can install the demo on Android today from Chrome. A native Android app built with Flutter is in the works.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="band">
+    <div class="wrap sec cta">
+      <span class="eyebrow">Ready na?</span>
+      <h2 class="rv">Simulan na <span>ang tally.</span></h2>
+      <p class="lede">Open the demo, log a motor, and take your first part off the shelf.</p>
+      <a class="btn" href="app/index.html"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg>Open the live demo</a>
+    </div>
+    <footer class="foot">
+      <div class="wrap">
+        <a class="brand" href="#top"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M5 5v14M9.5 5v14M14 5v14M18.5 5v14M3 16.5 21 7.5"/></svg></span>Talyer Tally</a>
+        <span>Job orders, parts tally and bill-out for Philippine motorshops.</span>
+        <span>© 2026 Talyer Tally</span>
+      </div>
+    </footer>
+  </section>
+</main>
+
+<nav class="mnav" aria-label="Sections">
+  <a href="#how" data-nav="how"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="19" r="3" /> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /> <circle cx="18" cy="5" r="3" /></svg>How</a>
+  <a href="#try" data-nav="try"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 14a8 8 0 0 1-8 8" /> <path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2" /> <path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1" /> <path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10" /> <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></svg>Try it</a>
+  <a class="fab" href="app/index.html" aria-label="Open the live demo"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></svg></a>
+  <a href="#features" data-nav="features"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /></svg>Features</a>
+  <a href="#faq" data-nav="faq"><svg class="ic " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></svg>FAQ</a>
+</nav>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ICONS={"check":"<path d=\"M20 6 9 17l-5-5\" />","minus":"<path d=\"M5 12h14\" />","x":"<path d=\"M18 6 6 18\" /> <path d=\"m6 6 12 12\" />","wrench":"<path d=\"M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z\" />","droplet":"<path d=\"M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z\" />","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\" />","settings-2":"<path d=\"M20 7h-9\" /> <path d=\"M14 17H5\" /> <circle cx=\"17\" cy=\"17\" r=\"3\" /> <circle cx=\"7\" cy=\"7\" r=\"3\" />","disc":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"2\" />","battery":"<rect width=\"16\" height=\"10\" x=\"2\" y=\"7\" rx=\"2\" ry=\"2\" /> <line x1=\"22\" x2=\"22\" y1=\"11\" y2=\"13\" />","circle-dot":"<circle cx=\"12\" cy=\"12\" r=\"10\" /> <circle cx=\"12\" cy=\"12\" r=\"1\" />"};
+const ic=n=>`<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||''}</svg>`;
+const peso=n=>'₱'+n.toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const peso0=n=>'₱'+Math.round(n).toLocaleString('en-PH');
+
+/* ---------- scroll effects ---------- */
+const hdr=$('#hdr'), prog=$('#progress'), floats=$$('[data-speed]'), track=$('#marquee');
+let mAnim=null; try{mAnim=track.getAnimations()[0]||null}catch(e){}
+let lastY=scrollY, ticking=false, settle;
+function frame(){
+  ticking=false;
+  const y=scrollY, max=document.documentElement.scrollHeight-innerHeight;
+  prog.style.transform=`scaleX(${max>0?Math.min(1,y/max):0})`;
+  hdr.classList.toggle('scrolled',y>8);
+  if(!reduce){
+    if(y<innerHeight*1.5) floats.forEach(f=>f.style.translate=`0 ${(-y*parseFloat(f.dataset.speed)).toFixed(1)}px`);
+    const v=y-lastY;
+    if(mAnim&&Math.abs(v)>1){
+      mAnim.playbackRate=Math.sign(v)*Math.min(7,1+Math.abs(v)/6);
+      clearTimeout(settle); settle=setTimeout(()=>{mAnim.playbackRate=1},160);
+    }
+  }
+  lastY=y;
+}
+addEventListener('scroll',()=>{if(!ticking){ticking=true;requestAnimationFrame(frame)}},{passive:true});
+frame();
+
+/* ---------- reveal on scroll (starts visible; only below-the-fold items get a short lift) ---------- */
+if(!reduce && 'IntersectionObserver' in window){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pending');io.unobserve(e.target)}}),{rootMargin:'0px 0px -6% 0px'});
+  $$('.rv').forEach(el=>{if(el.getBoundingClientRect().top>innerHeight*.92){el.classList.add('pending');io.observe(el)}});
+}
+
+/* ---------- how it works: sticky phone follows the steps ---------- */
+const steps=$$('.step'), screens=$$('#stage .screen'), rail=$$('.rail button');
+steps.forEach((s,k)=>{const slot=s.querySelector('.step-phone .phone');if(slot&&screens[k]){const c=screens[k].cloneNode(true);c.classList.add('on');slot.appendChild(c)}});
+function setStep(i){
+  steps.forEach((s,k)=>s.classList.toggle('on',k===i));
+  screens.forEach((s,k)=>s.classList.toggle('on',k===i));
+  rail.forEach((b,k)=>b.classList.toggle('on',k===i));
+}
+if('IntersectionObserver' in window){
+  const sio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)setStep(+e.target.dataset.step)}),{rootMargin:'-45% 0px -45% 0px'});
+  steps.forEach(s=>sio.observe(s));
+}
+rail.forEach(b=>b.addEventListener('click',()=>steps[+b.dataset.go].scrollIntoView({behavior:reduce?'auto':'smooth',block:'center'})));
+
+/* ---------- active section in the nav ---------- */
+const navLinks=$$('[data-nav]');
+if('IntersectionObserver' in window){
+  const nio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){const id=e.target.id;navLinks.forEach(a=>a.classList.toggle('on',a.dataset.nav===id))}}),{rootMargin:'-50% 0px -50% 0px'});
+  ['why','how','try','features','roles','install','faq'].forEach(id=>{const el=document.getElementById(id);if(el)nio.observe(el)});
+}
+
+/* ---------- roles toggle ---------- */
+const tabs=[[$('#tab-owner'),$('#panel-owner')],[$('#tab-mech'),$('#panel-mech')]];
+tabs.forEach(([t])=>t.addEventListener('click',()=>tabs.forEach(([tt,pp])=>{const on=tt===t;tt.setAttribute('aria-selected',on);pp.hidden=!on})));
+
+/* ---------- try it: tally bench ---------- */
+const SHELF=[
+  {id:'motul',name:'Motul 3100 Gold 10W-40 · 1L',icon:'droplet',price:420,stock:18},
+  {id:'plug',name:'Spark plug CPR7EA-9',icon:'zap',price:160,stock:15},
+  {id:'belt',name:'CVT drive belt (Click 125i)',icon:'settings-2',price:950,stock:4},
+  {id:'roller',name:'Roller weights 12g · set',icon:'settings-2',price:380,stock:9},
+  {id:'shoe',name:'Brake shoe (Click/Beat)',icon:'disc',price:280,stock:10},
+  {id:'gear',name:'Scooter gear oil · 120ml',icon:'droplet',price:95,stock:24},
+  {id:'batt',name:'Battery YTZ5S',icon:'battery',price:1350,stock:5},
+  {id:'tire',name:'Tire 80/90-14',icon:'circle-dot',price:1350,stock:6},
+];
+const LABOR=[['Change oil',100],['Tune-up',350],['CVT cleaning',300],['Brake service',150]];
+let D, lastAdded=null;
+function reset(){D={items:new Map([['motul',1]]),labor:new Set(['Change oil']),cash:null};lastAdded=null;draw()}
+function totals(){let p=0;D.items.forEach((q,id)=>{p+=SHELF.find(x=>x.id===id).price*q});let l=0;D.labor.forEach(n=>{l+=LABOR.find(x=>x[0]===n)[1]});return{p,l,t:p+l}}
+function toast(msg){const t=$('#toast');t.innerHTML=ic('check')+msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1700)}
+function draw(){
+  $('#shelf').innerHTML=SHELF.map(p=>{const q=D.items.get(p.id)||0,left=p.stock-q;return `
+    <button class="part ${q?'in':''}" data-add="${p.id}" ${left<=0?'disabled':''} aria-label="Add ${p.name}, ${peso0(p.price)}, ${left} on shelf">
+      <span class="q">${q}</span><span class="pi">${ic(p.icon)}</span><span class="nm">${p.name}</span>
+      <span class="st ${left<=3?'low':''}">${left<=0?'Out of stock':left+' on shelf'}</span><span class="pr">${peso0(p.price)}</span></button>`}).join('');
+  $('#labor').innerHTML=LABOR.map(([n,a])=>`<button data-lab="${n}" aria-pressed="${D.labor.has(n)}">${ic('wrench')}${n} <b>${peso0(a)}</b></button>`).join('');
+  const lines=[];
+  D.items.forEach((q,id)=>{const p=SHELF.find(x=>x.id===id);lines.push(`<div class="rc-ln ${id===lastAdded?'new':''}"><button data-sub="${id}" aria-label="Remove one ${p.name}">${ic(q>1?'minus':'x')}</button><span class="t">${q} × ${p.name}</span><span class="a">${peso(p.price*q)}</span></div>`)});
+  D.labor.forEach(n=>{const a=LABOR.find(x=>x[0]===n)[1];lines.push(`<div class="rc-ln ${n===lastAdded?'new':''}"><button data-lab="${n}" aria-label="Remove ${n}">${ic('x')}</button><span class="t">Labor · ${n}</span><span class="a">${peso(a)}</span></div>`)});
+  $('#rcLines').innerHTML=lines.join('')||'<div class="rc-empty">Tap a part to start the tally</div>';
+  const t=totals();
+  $('#rcParts').textContent=peso(t.p);$('#rcLabor').textContent=peso(t.l);$('#rcTotal').textContent=peso(t.t);
+  const opts=t.t?[...new Set([t.t,Math.ceil(t.t/100)*100,Math.ceil(t.t/500)*500,Math.ceil(t.t/1000)*1000])]:[];
+  $('#cash').innerHTML=opts.length?opts.map(v=>`<button data-cash="${v}" aria-pressed="${D.cash===v}">${peso0(v)}</button>`).join(''):'<span class="note">Add something first</span>';
+  const ch=$('#change');
+  if(D.cash==null||!t.t){ch.className='change';ch.innerHTML='<span>Pick an amount</span><b>—</b>'}
+  else if(D.cash<t.t){ch.className='change short';ch.innerHTML=`<span>Kulang (short)</span><b>${peso(t.t-D.cash)}</b>`}
+  else{ch.className='change ok';ch.innerHTML=`<span>Sukli (change)</span><b>${peso(D.cash-t.t)}</b>`}
+  lastAdded=null;
+}
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-add]'),s=e.target.closest('[data-sub]'),l=e.target.closest('[data-lab]'),c=e.target.closest('[data-cash]');
+  if(a){const p=SHELF.find(x=>x.id===a.dataset.add);const q=D.items.get(p.id)||0;if(q>=p.stock)return;D.items.set(p.id,q+1);lastAdded=p.id;draw();
+    if(innerWidth<900)toast(`Added ${p.name.split(' · ')[0]} · Total ${peso0(totals().t)}`)}
+  else if(s){const id=s.dataset.sub,q=D.items.get(id)||0;if(q<=1)D.items.delete(id);else D.items.set(id,q-1);draw()}
+  else if(l){const n=l.dataset.lab;if(D.labor.has(n))D.labor.delete(n);else{D.labor.add(n);lastAdded=n}draw()}
+  else if(c){D.cash=+c.dataset.cash;draw()}
+});
+$('#reset').addEventListener('click',reset);
+reset();
+})();
+</script>
+</body>
+</html>
